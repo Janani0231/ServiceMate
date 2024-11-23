@@ -1,0 +1,94 @@
+/* Basic styles for the registration form */
+.card {
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    margin-top: 2rem;
+}
+.card-body {
+    padding: 2rem;
+}
+
+.form-label {
+    font-weight: 500;
+}
+
+.text-danger {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+/* Styles for the About Us card */
+.about-us-card {
+    background-color: #1a68b5; /* Light background color */
+    border: 2px solid #dee2e6; /* Light border */
+    border-radius: 0.1rem; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    margin-top: 2rem; /* Top margin */
+}
+
+.about-us-card .card-body h2 {
+    font-size: 2rem; /* Larger font size */
+    font-weight: 700; /* Bold font */
+    color: #cd5573; /* Dark color */
+    margin-bottom: 1rem; /* Bottom margin */
+}
+
+.about-us-card .card-body p {
+    font-size: 1.1rem; /* Slightly larger font size */
+    line-height: 1.6; /* Line height */
+    color: #021222; /* Dark gray color */
+    margin-bottom: 1rem; /* Bottom margin */
+}
+
+.card {
+    border: 2px solid #ddd; /* Subtle border */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow */
+    transition: transform 0.2s, box-shadow 0.2s; /* Hover effect */
+    overflow: hidden;
+}
+
+/*<div class="service-cards-container" id="service-cards-section">*/
+/*this transform is not fully set up yet to do it for individual cards*/
+.card:hover #service-cards-section {
+    transform: scale(1.002); /* Slight zoom on hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
+}
+
+.card img {
+    height: 150px; /* Fixed height for uniformity */
+    object-fit: cover; /* Ensure image fits nicely */
+    border-bottom: 1px solid #ddd; /* Separate image from content */
+}
+
+.card-body {
+    padding: 16px;
+    text-align: center;
+}
+
+.card-body h5 {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.card-body p {
+    font-size: 0.9rem;
+    color: #777;
+    margin-bottom: 16px;
+}
+
+.card-body .btn-primary {
+    background-color: #007bff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.card-body .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+

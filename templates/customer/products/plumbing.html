@@ -1,0 +1,26 @@
+{% extends "customer/dashboard.html" %}
+{% block title %}Plumbing Services{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12">
+            <h1>Plumbing Services</h1>
+            <div class="row">
+                {% for job in plumbing_jobs %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="{{ job.image_url }}" class="card-img-top" alt="{{ job.title }}">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ job.title }}</h5>
+                            <p class="card-text">{{ job.description }}</p>
+                            <a href="{{ url_for('plumbing_products', service_id=job.id) }}" class="btn btn-primary">Book Now</a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

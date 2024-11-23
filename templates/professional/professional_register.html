@@ -1,0 +1,65 @@
+{% extends "main.html" %}
+
+{% block title %}Service Professional Signup{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="col-md-5 mx-auto">
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <h4 class="mb-4">Service Professional Signup</h4>
+                
+                <form method="POST" action="{{ url_for('register_professional') }}" enctype="multipart/form-data">
+                    {{ form.csrf_token }}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email ID(Username):</label>
+                        {{ form.email(class="form-control", required=true) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Password:</label>
+                        {{ form.password(class="form-control", required=true) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Fullname:</label>
+                        {{ form.name(class="form-control", required=true) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Service Name:</label>
+                        {{ form.service_type(class="form-control", required=true) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Experience(in yrs):</label>
+                        {{ form.experience(class="form-control", type="number", required=true) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Attach documents (single pdf):</label>
+                        {{ form.documents(class="form-control", type="file", accept=".pdf", required=true) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Address:</label>
+                        {{ form.address(class="form-control", rows="3", required=true) }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Pin Code:</label>
+                        {{ form.pincode(class="form-control", required=true) }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 mb-3">Register</button>
+                    
+                    <div class="text-center">
+                        <a href="{{ url_for('login') }}" class="text-decoration-none">Login here</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

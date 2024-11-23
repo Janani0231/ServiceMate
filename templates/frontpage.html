@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ...existing code... -->
+</head>
+<body>
+    <header>
+        <nav>
+            <ul style="float: right; list-style-type: none;">
+                {% for link in nav_links %}
+                <li><a href="{{ link.href }}">{{ link.text }}</a></li>
+                {% endfor %}
+            </ul>
+        </nav>
+    </header>
+    <main>
+        <p>{{ placeholder_paragraph }}</p>
+    </main>
+</body>
+</html>

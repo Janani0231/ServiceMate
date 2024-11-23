@@ -1,0 +1,48 @@
+{# admin/dashboard.html #}
+
+{% extends "admin/admin_base.html" %}
+<!-- Main Content -->
+{% block admin_content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="row mt-4">
+            <!-- Service Management Card -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Service Management</h5>
+                        <p class="card-text">Manage all services offered on the platform.</p>
+                        <a href="{{ url_for('manage_services') }}" class="btn btn-primary">Manage Services</a>
+                    </div>
+                </div>
+            </div>
+            <!-- professional Management Card -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Professionals Management</h5>
+                        <p class="card-text">Manage all professional details on the platform.</p>
+                        <a href="{{ url_for('manage_professionals') }}" class="btn btn-primary">Manage professionals</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class= "col-md-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Service Requests</h5>
+                        <p class="card-text">Manage all service requests on the platform.</p>
+                        <a href="{{ url_for('manage_service_requests') }}" class="btn btn-primary">Manage Service Requests</a>
+                    </div>
+                </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    console.log("{{ url_for('manage_services') }}");
+    console.log("{{ url_for('manage_professionals') }}");
+</script>
+
+{% endblock %}

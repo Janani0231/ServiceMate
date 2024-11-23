@@ -1,0 +1,83 @@
+{% extends "admin/admin_base.html" %}
+
+{% block admin_content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2>Service Requests</h2>
+            <div class="btn-group mb-3">
+                <a href="{{ url_for('manage_service_requests', status='all') }}" 
+                   class="btn btn-outline-primary {% if current_filter == 'all' %}active{% endif %}">All</a>
+                <a href="{{ url_for('manage_service_requests', status='requested') }}" 
+                   class="btn btn-outline-primary {% if current_filter == 'requested' %}active{% endif %}">Requested</a>
+                <a href="{{ url_for('manage_service_requests', status='accepted') }}" 
+                   class="btn btn-outline-primary {% if current_filter == 'accepted' %}active{% endif %}">Accepted</a>
+                <a href="{{ url_for('manage_service_requests', status='completed') }}" 
+                   class="btn btn-outline-primary {% if current_filter == 'completed' %}active{% endif %}">Completed</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Assigned Professional</th>
+                        <th>Requested Date</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.professional.name if request.professional else 'Unassigned' }}</td>
+                        <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            <span class="badge bg-{{ {
+                                'requested': 'warning',
+                                'accepted': 'primary',
+                                'completed': 'success'
+                            }[request.status] }}">
+                                {{ request.status.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#requestModal{{ request.id }}">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    {% for request in requests %}
+    <div class="modal fade" id="requestModal{{ request.id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Request Details #{{ request.id }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Customer:</strong> {{ request.customer.name }}</p>
+                    <p><strong>Service:</strong> {{ request.service.name }}</p>
+                    <p><strong>Professional:</strong> {{ request.professional.name if request.professional else 'Unassigned' }}</p>
+                    <p><strong>Status:</strong> {{ request.status.title() }}</p>
+                    <p><strong>Requested Date:</strong> {{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    {% if request.remarks %}
+                    <p><strong>Remarks:</strong> {{ request.remarks }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

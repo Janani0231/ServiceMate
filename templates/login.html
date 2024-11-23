@@ -1,0 +1,49 @@
+{% extends "main.html" %}
+
+{% block title %}A to Z Household Services{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="m-0">Service mate</h4>
+                        <a href="{{ url_for('register_professional') }}" class="text-decoration-none">Register as professional</a>
+                    </div>
+                    
+                    <form method="POST">
+                        {{ form.csrf_token }}
+                        <div class="mb-3">
+                            <label class="form-label">Registered Email ID:</label>
+                            {{ form.username(class="form-control", placeholder="Enter your email") }}
+                            {% if form.username.errors %}
+                                {% for error in form.username.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Password:</label>
+                            {{ form.password(class="form-control", placeholder="Enter your password") }}
+                            {% if form.password.errors %}
+                                {% for error in form.password.errors %}
+                                    <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 mb-3">Login</button>
+                        
+                        <div class="text-center">
+                            <a href="{{ url_for('register_customer') }}" class="text-decoration-none">Create Account?</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

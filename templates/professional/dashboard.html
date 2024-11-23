@@ -1,0 +1,84 @@
+{# professional/dashboard.html #}
+
+{% extends "admin/admin_base.html" %}
+<!-- Main Content -->
+{% block admin_content %}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title">Today's Services</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Service ID</th>
+                            <th>Client Name</th>
+                            <th>time</th>
+                            <th>Contact Phone Number</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in today_services %}
+                        <tr>
+                            <td>{{ service.id }}</td>
+                            <td>{{ service.client_name }}</td>
+                            <td>{{service.time}}</td>
+                            <td>{{ service.contact_phone_number }}</td>
+                            <td>{{ service.location }}</td>
+                            <td>{{ service.status }}</td>
+                            <td>{{ service.actions }}</td>
+                            <td>
+                                <a href="{{ url_for('view_service_details', service_id=service.id) }}" class="btn btn-sm btn-info">View</a>
+                                <a href="{{ url_for('update_service_status', service_id=service.id) }}" class="btn btn-sm btn-primary">Update</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title">Closed Services</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Service ID</th>
+                            <th>Client Name</th>
+                            <th>Contact Phone Number</th>
+                            <th>Location</th>
+                            <th>Date</th>
+                            <th>Rating</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for service in closed_services %}
+                        <tr>
+                            <td>{{ service.id }}</td>
+                            <td>{{ service.client_name }}</td>
+                            <td>{{ service.contact_phone_number }}</td>
+                            <td>{{ service.location }}</td>
+                            <td>{{ service.date}}</td>
+                            <td>{{ service.Rating}}</td>
+                            <td>
+                                <a href="{{ url_for('view_service_details', service_id=service.id) }}" class="btn btn-sm btn-info">View</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
