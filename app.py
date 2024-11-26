@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash, session
-from extensions import db, login_manager
+from extensions import db, login_manager,migrate
 from model import User
 import os
 
@@ -11,6 +11,7 @@ app = Flask(__name__, static_folder='static')
 
 app.config.from_object('config.DevelopmentConfig')
 db.init_app(app)
+migrate.init_app(app, db)
 login_manager.init_app(app)
 
 UPLOAD_FOLDER = 'static/uploads'

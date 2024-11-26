@@ -1,9 +1,10 @@
 import os
 from flask import Flask, render_template, redirect, url_for, flash, request, session
 from flask_login import login_user, logout_user, login_required, current_user
-from model import User, Customer, ServiceProfessional, Service, ServiceRequest
+from model import User, Customer, ServiceProfessional, Service,SubService, ServiceRequest
 from werkzeug.utils import secure_filename
-from forms import LoginForm, RegisterForm, ServiceForm
+from datetime import datetime
+from forms import LoginForm, RegisterForm, ServiceForm,ServiceRequestForm
 from app import app
 from extensions import db
 from sqlalchemy import or_
@@ -211,6 +212,24 @@ def delete_service(service_id):
     
     return redirect(url_for('manage_services'))
 
+@app.route('/debug/services')
+def debug_services():
+    try:
+        services = Service.query.all()
+        service_data = []
+        for service in services:
+            service_data.append({
+                'id': service.id,
+                'name': service.name,
+                'price': service.price,
+                'time_required': service.time_required,
+                'is_active': service.is_active
+            })
+        return {'services': service_data}
+    except Exception as e:
+        return {'error': str(e)}
+
+
 @app.route('/admin/services/edit/<int:service_id>', methods=['GET', 'POST'])
 @login_required
 def edit_service(service_id):
@@ -329,6 +348,100 @@ def admin_search():
     
     return render_template('admin/search.html', results=results, query=query, search_type=search_type)
 
+@app.route('/service/<int:service_id>/request', methods=['GET', 'POST'])
+@login_required
+def create_service_request(service_id):
+    if current_user.type != 'customer':
+        flash('Only customers can create service requests.', 'error')
+        return redirect(url_for('index'))
+        
+    sub_service = SubService.query.get_or_404(service_id)
+    form = ServiceRequestForm()
+    
+    if form.validate_on_submit():
+        request = ServiceRequest(
+            service_id=sub_service.parent_service_id,  # Link to parent service
+            sub_service_id=sub_service.id,  # Add this field to ServiceRequest model
+            customer_id=current_user.id,
+            preferred_date=form.preferred_date.data,
+            preferred_time=form.preferred_time.data,
+            address=form.address.data,
+            pincode=form.pincode.data,
+            description=form.description.data,
+            status='requested'
+        )
+        db.session.add(request)
+        db.session.commit()
+        
+        flash('Service request submitted successfully!', 'success')
+        return redirect(url_for('customer_dashboard'))
+        
+    return render_template('customer/create_request.html', 
+                         form=form, 
+                         service=sub_service.parent_service,
+                         sub_service=sub_service)
+
+@app.route('/professional/requests')
+@login_required
+def professional_requests():
+    if current_user.type != 'service_professional':
+        return redirect(url_for('index'))
+        
+    pending_requests = ServiceRequest.query.filter(
+        ServiceRequest.status == 'requested',
+        ServiceRequest.service_id == current_user.service_type
+    ).all()
+    
+    my_requests = ServiceRequest.query.filter(
+        ServiceRequest.professional_id == current_user.id
+    ).all()
+    
+    return render_template('professional/requests.html', 
+                         pending_requests=pending_requests,
+                         my_requests=my_requests)
+
+@app.route('/request/<int:request_id>/<action>')
+@login_required
+def handle_request(request_id, action):
+    if current_user.type != 'service_professional':
+        return redirect(url_for('index'))
+        
+    request = ServiceRequest.query.get_or_404(request_id)
+    
+    if action == 'accept':
+        request.professional_id = current_user.id
+        request.status = 'accepted'
+        flash('Request accepted successfully!', 'success')
+    elif action == 'complete':
+        request.status = 'completed'
+        request.date_of_completion = datetime.utcnow()
+        flash('Request marked as completed!', 'success')
+    
+    db.session.commit()
+    return redirect(url_for('professional_requests'))
+
+@app.route('/customer/dashboard')
+@login_required
+def customer_dashboard():
+    if current_user.type != 'customer':
+        return redirect(url_for('index'))
+        
+    active_requests = ServiceRequest.query.filter(
+        ServiceRequest.customer_id == current_user.id,
+        ServiceRequest.status.in_(['requested', 'accepted'])
+    ).all()
+    
+    completed_requests = ServiceRequest.query.filter(
+        ServiceRequest.customer_id == current_user.id,
+        ServiceRequest.status == 'completed'
+    ).all()
+    
+    return render_template('customer/dashboard.html',
+                         active_requests=active_requests,
+                         completed_requests=completed_requests)
+
+
+"""
 @app.route('/book_service/<service_id>', methods=['GET', 'POST'])
 @login_required
 def book_service(service_id):
@@ -349,7 +462,8 @@ def book_service(service_id):
         flash('Service booked successfully!', 'success')
         return redirect(url_for('dashboard'))
     
-    return render_template('book_service.html', service=service)
+    return render_template('book_service.html', service=service)"""
+
     
 """@app.route('/products')
 @login_required
@@ -364,48 +478,106 @@ from flask_login import login_required
 def products():
     return render_template('customer/products.html')"""
 
-@app.route('/products/plumbing')
+
+#second comment
+
+"""@app.route('/customer/products/plumbing')
 @login_required
 def plumbing_products():
-    return render_template('customer/plumbing.html')
+    plumbing_service = Service.query.filter_by(name='Plumbing').first()
+    if not plumbing_service:
+        flash('Service not found', 'error')
+        return redirect(url_for('customer_dashboard'))
+        
+    sub_services = SubService.query.filter_by(
+        parent_service_id=plumbing_service.id,
+        is_active=True
+    ).all()
+    
+    return render_template('customer/products/plumbing.html', sub_services=sub_services)
 
-@app.route('/products/cleaning')
+@app.route('/customer/products/cleaning')
 @login_required
 def cleaning_products():
-    return render_template('customer/cleaning.html')
+    cleaning_service = Service.query.filter_by(name='Cleaning').first()
+    if not cleaning_service:
+        flash('Service not found', 'error')
+        return redirect(url_for('customer_dashboard'))
+        
+    sub_services = SubService.query.filter_by(
+        parent_service_id=cleaning_service.id,
+        is_active=True
+    ).all()
+    
+    return render_template('customer/products/cleaning.html', sub_services=sub_services)
 
-@app.route('/products/haircut')
+@app.route('/customer/products/haircut')
 @login_required
 def haircut_products():
-    return render_template('customer/haircut.html')
+    return render_template('customer/products/haircut.html')
 
-@app.route('/products/pest_control')
+@app.route('/customer/products/pest_control')
 @login_required
 def pest_control_products():
-    return render_template('customer/pest_control.html')
+    pest_control_service = Service.query.filter_by(name='Pest Control').first()
+    if not pest_control_service:
+        flash('Service not found', 'error')
+        return redirect(url_for('customer_dashboard'))
+        
+    sub_services = SubService.query.filter_by(
+        parent_service_id=pest_control_service.id,
+        is_active=True
+    ).all()
+    
+    return render_template('customer/products/pest_control.html', sub_services=sub_services)
 
-@app.route('/products/painting')
+@app.route('/customer/products/painting')
 @login_required
 def painting_products():
-    return render_template('customer/painting.html')
+    return render_template('customer/products/painting.html')
 
-@app.route('/products/carpentry')
+@app.route('/customer/products/carpentry')
 @login_required
 def carpentry_products():
-    return render_template('customer/carpentry.html')
+    return render_template('customer/products/carpentry.html')
 
-@app.route('/products/gardening')
+@app.route('/customer/products/gardening')
 @login_required
 def gardening_products():
-    return render_template('customer/gardening.html')
+    return render_template('customer/products/gardening.html')
 
-@app.route('/products/home_renovation')
+@app.route('/customer/products/home_renovation')
 @login_required
 def home_renovation_products():
-    return render_template('customer/home_renovation.html')
-
+    return render_template('customer/products/home_renovation.html')
 
 @app.route('/customer/products/electricals')
 @login_required
 def electrical_products():
-    return render_template('/customer/products/electricals.html')
+    electrical_service = Service.query.filter_by(name='Electrical Work').first()
+    if not electrical_service:
+        flash('Service not found', 'error')
+        return redirect(url_for('customer_dashboard'))
+        
+    sub_services = SubService.query.filter_by(
+        parent_service_id=electrical_service.id,
+        is_active=True
+    ).all()
+    
+    return render_template('customer/products/electricals.html', sub_services=sub_services)"""
+
+@app.route('/customer/products/<service_type>')
+@login_required
+def service_products(service_type):
+    service = Service.query.filter_by(name=service_type.replace('_', ' ').title()).first()
+    if not service:
+        flash('Service not found', 'error')
+        return redirect(url_for('customer_dashboard'))
+        
+    sub_services = SubService.query.filter_by(
+        parent_service_id=service.id,
+        is_active=True
+    ).all()
+    
+    template_name = f'customer/products/{service_type}.html'
+    return render_template(template_name, sub_services=sub_services, service=service)

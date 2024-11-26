@@ -1,4 +1,4 @@
-{% extends "admin/admin_base.html" %}
+{% extends "main.html" %}
 
 {% block admin_content %}
 <div class="container">
@@ -35,7 +35,7 @@
                     <tr>
                         <td>{{ request.id }}</td>
                         <td>{{ request.professional.name if request.professional else 'Unassigned' }}</td>
-                        <td>{{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ request.date_of_request.strftime('%Y-%m-%d %H:%M') }}</td>
                         <td>
                             <span class="badge bg-{{ {
                                 'requested': 'warning',
@@ -70,7 +70,7 @@
                     <p><strong>Service:</strong> {{ request.service.name }}</p>
                     <p><strong>Professional:</strong> {{ request.professional.name if request.professional else 'Unassigned' }}</p>
                     <p><strong>Status:</strong> {{ request.status.title() }}</p>
-                    <p><strong>Requested Date:</strong> {{ request.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                    <p><strong>Requested Date:</strong> {{ request.date_of_request.strftime('%Y-%m-%d %H:%M') }}</p>
                     {% if request.remarks %}
                     <p><strong>Remarks:</strong> {{ request.remarks }}</p>
                     {% endif %}

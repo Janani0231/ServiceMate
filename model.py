@@ -92,6 +92,27 @@ class ServiceRequest(db.Model):
     rating = db.Column(db.Integer)  # 1-5 rating
     review = db.Column(db.Text)
     service = db.relationship('Service', backref='requests')
+    preferred_date = db.Column(db.Date, nullable=False)
+    preferred_time = db.Column(db.Time, nullable=False)
+    address = db.Column(db.String(200), nullable=False)
+    pincode = db.Column(db.String(10), nullable=False)
+    description = db.Column(db.Text)
+    sub_service_id = db.Column(db.Integer, db.ForeignKey('sub_service.id'))
+    sub_service = db.relationship('SubService', backref='requests')
 
     def __repr__(self):
         return f'<ServiceRequest {self.id}>'
+    
+class SubService(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    parent_service_id = db.Column(db.Integer, db.ForeignKey('service.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    price = db.Column(db.Float, nullable=False)
+    time_required = db.Column(db.Integer, nullable=False)  # in minutes
+    is_active = db.Column(db.Boolean, default=True)
+    
+    parent_service = db.relationship('Service', backref='sub_services')
+
+    def __repr__(self):
+        return f'<SubService {self.name}>'

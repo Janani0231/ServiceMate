@@ -1,9 +1,9 @@
-
-{% extends "admin/admin_base.html" %}
+{% extends "main.html" %}
 
 {% block title %}Edit Service - Admin Dashboard{% endblock %}
 
 {% block content %}
+{% block admin_content %}
 <div class="container">
     <div class="row">
         <div class="col-md-8 offset-md-2">
@@ -38,4 +38,5 @@
         </div>
     </div>
 </div>
+{% endblock %}
 {% endblock %}

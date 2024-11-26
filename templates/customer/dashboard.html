@@ -1,27 +1,27 @@
 {# services/dashboard.html #}
 
-{% extends "admin/admin_base.html" %}
+{% extends "main.html" %}
 <!-- Main Content -->
 {% block admin_content %}
 
 <div class="row">
     <div class="col-md-12">
         <!-- Available Services Section -->
-        <div class="card mt-4">
+        <div class="card mt-4 mb-4" style="margin-bottom: 30rem;"> <!-- Adjust value as needed -->
             <div class="card-header">
                 <h5 class="card-title">Services categories</h5>
             </div>
-            <div class="card-body">
+            <div class="card-body pb-5">
                 <div class="service-cards-container" id="service-cards-section">
                     <div class="row">
-                        <!-- Hair Care Services -->
+                        <!-- Electrical Services -->
                         <div class="col-md-4 mb-4">
                             <div class="card h-100">
                                 <img src="https://example.com/electrical.jpg" class="card-img-top" alt="Electrical Services">
                                 <div class="card-body">
                                     <p class="card-text">Power up your home</p>
                                     <h5 class="card-title">Electrical Services</h5>        
-                                    <a href="{{ url_for('electrical_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{ url_for('service_products', service_type='electrical_work') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -33,7 +33,7 @@
                                 <div class="card-body">
                                     <p class="card-text">Fixing leaks, fast and right.</p>
                                     <h5 class="card-title">Plumbing Services</h5>                                
-                                    <a href="{{ url_for('plumbing_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{ url_for('service_products', service_type='plumbing') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -45,7 +45,7 @@
                                 <div class="card-body">
                                     <p class="card-text">Spotless spaces, hassle-free.</p>
                                     <h5 class="card-title">Cleaning Services</h5>                                
-                                    <a href="{{ url_for('cleaning_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{url_for('service_products', service_type='cleaning') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -57,7 +57,7 @@
                                 <div class="card-body">
                                     <p class="card-text">Style and relaxation delivered</p>
                                     <h5 class="card-title">Haircut and Spa</h5>                                
-                                    <a href="{{ url_for('haircut_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{ url_for('service_products', service_type='haircut') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -69,7 +69,7 @@
                                 <div class="card-body">
                                     <p class="card-text">Say goodbye to pests!</p>
                                     <h5 class="card-title">Pest Control</h5>
-                                    <a href="{{ url_for('pest_control_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{ url_for('service_products', service_type='pest_control') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -81,7 +81,7 @@
                                 <div class="card-body">
                                     <p class="card-text">Color your world beautifully.</p>   
                                     <h5 class="card-title">Painting Services</h5>                                             
-                                    <a href="{{ url_for('painting_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{ url_for('service_products', service_type='painting') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -93,7 +93,7 @@
                                 <div class="card-body">
                                     <p class="card-text">Crafting furniture with care</p>
                                     <h5 class="card-title">Carpentry Services</h5>
-                                    <a href="{{ url_for('carpentry_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{ url_for('service_products', service_type='carpentry') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -105,7 +105,7 @@
                                 <div class="card-body">
                                     <p class="card-text">Green thumbs, greener spaces.</p>   
                                     <h5 class="card-title">Gardening Services</h5>                                             
-                                    <a href="{{ url_for('gardening_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{url_for('service_products', service_type='gardening') }}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
@@ -117,14 +117,16 @@
                                 <div class="card-body">
                                     <p class="card-text">Reimagine your living space.</p>   
                                     <h5 class="card-title">Home Renovation Services</h5>                                             
-                                    <a href="{{ url_for('home_renovation_products') }}" class="btn btn-primary">Book Now</a>
+                                    <a href="{{ url_for('service_products', service_type='home_renovation')}}" class="btn btn-primary">Book Now</a>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        <!-- Service History Section 
+        </div>
+        <div class="mt-4">
+        Service History Section 
         <div class="card mt-4 mb-4">
             <div class="card-header">
                 <h5 class="card-title">Your Service History</h5>
@@ -174,6 +176,6 @@
             </div>
         </div>
     </div>
-</div>-->
+</div>
 
-{% endblock %}
+{% endblock %} 

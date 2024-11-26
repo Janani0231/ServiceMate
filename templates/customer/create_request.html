@@ -1,0 +1,46 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-body">
+                <h4 class="mb-4">Request Service: {{ service.name }}</h4>
+                
+                <form method="POST">
+                    {{ form.csrf_token }}
+                    {{ form.service_id }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Preferred Date:</label>
+                            {{ form.preferred_date(class="form-control") }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Preferred Time:</label>
+                            {{ form.preferred_time(class="form-control") }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Service Address:</label>
+                        {{ form.address(class="form-control", rows="3") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Pin Code:</label>
+                        {{ form.pincode(class="form-control") }}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Special Instructions:</label>
+                        {{ form.description(class="form-control", rows="3") }}
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit Request</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

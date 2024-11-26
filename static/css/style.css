@@ -50,8 +50,8 @@
 /*<div class="service-cards-container" id="service-cards-section">*/
 /*this transform is not fully set up yet to do it for individual cards*/
 .card:hover #service-cards-section {
-    transform: scale(1.002); /* Slight zoom on hover */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); /* Enhance shadow on hover */
+    /*transform: scale(1.002);  Slight zoom on hover 
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);  Enhance shadow on hover */
 }
 
 .card img {

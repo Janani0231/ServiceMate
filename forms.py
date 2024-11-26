@@ -1,5 +1,5 @@
 from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, IntegerField, FileField
+from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, IntegerField, FileField,HiddenField, DateField, TimeField  
 from wtforms.validators import DataRequired, Email, Length, Optional
 
 class LoginForm(FlaskForm):
@@ -38,5 +38,10 @@ class ServiceForm(FlaskForm):
     submit = SubmitField('Add Service')
 
 class ServiceRequestForm(FlaskForm):
-    remarks = TextAreaField('Remarks')
-    submit = SubmitField('Request Service')
+    service_id = HiddenField('Service ID')
+    preferred_date = DateField('Preferred Date', validators=[DataRequired()])
+    preferred_time = TimeField('Preferred Time', validators=[DataRequired()])
+    description = TextAreaField('Description/Special Instructions')
+    address = TextAreaField('Service Address', validators=[DataRequired()])
+    pincode = StringField('Pin Code', validators=[DataRequired(), Length(max=10)])
+    submit = SubmitField('Submit Request')
