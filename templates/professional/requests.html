@@ -1,0 +1,100 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <!-- My Assigned Requests -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="card-title mb-0">My Assigned Requests</h5>
+        </div>
+        <div class="card-body">
+            {% if my_requests %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Customer Name</th>
+                        <th>Service</th>
+                        <th>Preferred Date</th>
+                        <th>Preferred Time</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in my_requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.customer.name }}</td>
+                        <td>{{ request.service.name }}</td>
+                        <td>{{ request.preferred_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ request.preferred_time.strftime('%H:%M') }}</td>
+                        <td>{{ request.pincode }}</td>
+                        <td>
+                            <span class="badge bg-{{ {
+                                'accepted': 'primary',
+                                'completed': 'success'
+                            }[request.status] }}">
+                                {{ request.status.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if request.status == 'accepted' %}
+                            <a href="{{ url_for('handle_request', request_id=request.id, action='complete') }}" 
+                               class="btn btn-sm btn-success">Mark Complete</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-center">No assigned requests.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Pending Requests -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Pending Requests</h5>
+        </div>
+        <div class="card-body">
+            {% if pending_requests %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Request ID</th>
+                        <th>Customer Name</th>
+                        <th>Service</th>
+                        <th>Preferred Date</th>
+                        <th>Preferred Time</th>
+                        <th>Location</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for request in pending_requests %}
+                    <tr>
+                        <td>{{ request.id }}</td>
+                        <td>{{ request.customer.name }}</td>
+                        <td>{{ request.service.name }}</td>
+                        <td>{{ request.preferred_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ request.preferred_time.strftime('%H:%M') }}</td>
+                        <td>{{ request.pincode }}</td>
+                        <td>
+                            <a href="{{ url_for('handle_request', request_id=request.id, action='accept') }}" 
+                               class="btn btn-sm btn-success">Accept</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-center">No pending requests for your service type.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

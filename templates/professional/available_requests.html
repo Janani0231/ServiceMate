@@ -1,0 +1,44 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Available Service Requests</h2>
+    <div class="card">
+        <div class="card-body">
+            {% if available_requests %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Request ID</th>
+            <th>Customer Name</th>
+            <th>Service</th>
+            <th>Preferred Date</th>
+            <th>Preferred Time</th>
+            <th>Location</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for request in available_requests %}
+        <tr>
+            <td>{{ request.id }}</td>
+            <td>{{ request.customer.name }}</td>
+            <td>{{ request.service.name }}</td>
+            <td>{{ request.preferred_date.strftime('%Y-%m-%d') }}</td>
+            <td>{{ request.preferred_time.strftime('%H:%M') }}</td>
+            <td>{{ request.pincode }}</td>
+            <td>
+                <a href="{{ url_for('handle_request', request_id=request.id, action='accept') }}" 
+                   class="btn btn-sm btn-success">Accept</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p class="text-center">No available requests for {{ current_user.service_type }} services.</p>
+{% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
