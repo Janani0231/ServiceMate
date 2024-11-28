@@ -67,6 +67,7 @@ def register():
 @app.route('/register/professional', methods=['GET', 'POST'])
 def register_professional():
     form = RegisterForm()
+    services = Service.query.all()
     if form.validate_on_submit():
         try:
             # Check if user already exists
@@ -107,7 +108,7 @@ def register_professional():
             for error in errors:
                 flash(f'{field}: {error}', 'danger')
                 
-    return render_template('professional/professional_register.html', form=form)
+    return render_template('professional/professional_register.html', form=form, services=services)
 
 @app.route('/register/customer', methods=['GET', 'POST'])
 def register_customer():
@@ -360,8 +361,8 @@ def create_service_request(service_id):
     
     if form.validate_on_submit():
         request = ServiceRequest(
-            service_id=sub_service.parent_service_id,  # Link to parent service
-            sub_service_id=sub_service.id,  # Add this field to ServiceRequest model
+            service_id=sub_service.parent_service_id, 
+            sub_service_id=sub_service.id,  
             customer_id=current_user.id,
             preferred_date=form.preferred_date.data,
             preferred_time=form.preferred_time.data,
@@ -399,6 +400,26 @@ def professional_requests():
     return render_template('professional/requests.html', 
                          pending_requests=pending_requests,
                          my_requests=my_requests)
+
+
+@app.route('/professional/available-requests')
+@login_required
+def available_requests():
+    if current_user.type != 'service_professional':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    # Get requests matching the professional's service type that are in 'requested' status
+    available_requests = ServiceRequest.query.filter(
+        ServiceRequest.status == 'requested',
+        ServiceRequest.professional_id == None,
+        ServiceRequest.service.has(Service.name == current_user.service_type)
+    ).all()
+    
+    return render_template('professional/available_requests.html', 
+                         available_requests=available_requests)
+
+
 
 @app.route('/request/<int:request_id>/<action>')
 @login_required
