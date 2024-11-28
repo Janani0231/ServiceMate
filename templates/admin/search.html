@@ -16,7 +16,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Search...">
+                        <input type="text" name="q" class="form-control" value="{{ query }}" placeholder="Search">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">Search</button>
@@ -34,6 +34,7 @@
                                 {% if search_type == 'service_request' %}
                                 <th>Customer</th>
                                 <th>Service</th>
+                                <th>Service Type</th>
                                 <th>Status</th>
                                 {% elif search_type == 'professional' %}
                                 <th>Name</th>
@@ -41,8 +42,7 @@
                                 <th>Status</th>
                                 {% elif search_type == 'services' %}
                                 <th>Name</th>
-                                <th>Base Price</th>
-                                <th>Time Required</th>
+                                <th>Description</th>
                                 {% else %}
                                 <th>Name</th>
                                 <th>Email</th>
@@ -56,16 +56,18 @@
                                 <td>{{ result.id }}</td>
                                 {% if search_type == 'service_request' %}
                                 <td>{{ result.customer.name }}</td>
+                                <td>{{ result.sub_service.name}}</td>
                                 <td>{{ result.service.name }}</td>
                                 <td>{{ result.status }}</td>
+                                
                                 {% elif search_type == 'professional' %}
                                 <td>{{ result.name }}</td>
                                 <td>{{ result.service_type }}</td>
                                 <td>{{ 'Approved' if result.is_approved else 'Pending' }}</td>
+
                                 {% elif search_type == 'services' %}
                                 <td>{{ result.name }}</td>
-                                <td>${{ result.price }}</td>
-                                <td>{{ result.time_required }} mins</td>
+                                <td>{{ result.description}}</td>
                                 {% else %}
                                 <td>{{ result.name }}</td>
                                 <td>{{ result.email }}</td>

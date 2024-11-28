@@ -30,56 +30,56 @@ def init_db():
         services = [
             Service(
                 name='Plumbing',
-                price=79.99,
-                time_required=90,
+                #price=79.99,
+                #time_required=90,
                 description='Professional plumbing services including repairs, installations, and maintenance'
             ),
             Service(
                 name='Cleaning',
-                price=49.99,
-                time_required=120,
+                #price=49.99,
+                #time_required=120,
                 description='Professional cleaning services for homes and offices'
             ),
             Service(
                 name='Haircut',
-                price=29.99,
-                time_required=45,
+                #price=29.99,
+                #time_required=45,
                 description='Professional haircut services at your doorstep'
             ),
             Service(
                 name='Pest Control',
-                price=129.99,
-                time_required=150,
+                #price=129.99,
+                #time_required=150,
                 description='Complete pest control treatment for your property'
             ),
             Service(
                 name='Painting',
-                price=199.99,
-                time_required=480,
+                #price=199.99,
+                #time_required=480,
                 description='Professional painting services for interior and exterior'
             ),
             Service(
                 name='Carpentry',
-                price=89.99,
-                time_required=180,
+                #price=89.99,
+                #time_required=180,
                 description='Expert carpentry services for furniture repair and custom work'
             ),
             Service(
                 name='Gardening',
-                price=69.99,
-                time_required=120,
+                #price=69.99,
+                #time_required=120,
                 description='Professional gardening and landscaping services'
             ),
             Service(
                 name='Home Renovation',
-                price=299.99,
-                time_required=960,
+                #price=299.99,
+                #time_required=960,
                 description='Complete home renovation and remodeling services'
             ),
             Service(
                 name='Electrical Work',
-                price=89.99,
-                time_required=120,
+                #price=89.99,
+                #time_required=120,
                 description='Professional electrical repair and installation services'
             )
         ]

@@ -4,15 +4,24 @@ from flask_login import login_user, logout_user, login_required, current_user
 from model import User, Customer, ServiceProfessional, Service,SubService, ServiceRequest
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from forms import LoginForm, RegisterForm, ServiceForm,ServiceRequestForm
+from forms import LoginForm, RegisterForm, ServiceForm,ServiceRequestForm, ServiceProfessionalProfileForm
 from app import app
 from extensions import db
 from sqlalchemy import or_
+from datetime import date
+
 
 
 @app.route('/')
 def index():
+    #user is not authenticated
+    if not current_user.is_authenticated:
+        return redirect(url_for('login'))
+    # User is authenticated, redirect to appropriate dashboard)
+    return redirect(url_for('dashboard'))
+
     return render_template('main.html')
+
 
 @app.route('/test_db')
 def test_db():
@@ -85,6 +94,7 @@ def register_professional():
                 username=form.email.data,
                 email=form.email.data,
                 name=form.name.data,
+                phone=form.phone.data, 
                 address=form.address.data,
                 pincode=form.pincode.data,
                 service_type=form.service_type.data,
@@ -125,6 +135,7 @@ def register_customer():
                 username=form.email.data,
                 email=form.email.data,
                 name=form.name.data,
+                phone= form.phone.data,
                 address=form.address.data,
                 pincode=form.pincode.data,
                 type='customer'  # Make sure to set the user type
@@ -162,7 +173,32 @@ def dashboard():
     elif current_user.type == 'customer':
         return render_template('customer/dashboard.html')
     elif current_user.type == 'service_professional':
-        return render_template('professional/dashboard.html')
+
+        #get available requests
+        available_requests = ServiceRequest.query.filter(
+        ServiceRequest.status == 'requested',
+        ServiceRequest.professional_id == None,
+        ServiceRequest.service.has(Service.name == current_user.service_type)
+    ).all()
+        # Get today's services
+        today = date.today()
+        today_services = ServiceRequest.query.filter(
+            ServiceRequest.professional_id == current_user.id,
+            ServiceRequest.status == 'accepted',
+            ServiceRequest.preferred_date == today
+        ).all()
+        
+        # Get closed services
+        closed_services = ServiceRequest.query.filter(
+            ServiceRequest.professional_id == current_user.id,
+            ServiceRequest.status == 'completed'
+        ).all()
+
+        return render_template('professional/dashboard.html', 
+                               available_requests = available_requests,
+                               today_services=today_services,
+                               closed_services=closed_services)
+        
     
 
 
@@ -180,8 +216,7 @@ def manage_services():
             service = Service(
                 name=form.name.data,
                 description=form.description.data,
-                price=form.price.data,
-                time_required=form.time_required.data
+                #time_required=form.time_required.data
             )
             db.session.add(service)
             db.session.commit()
@@ -214,7 +249,9 @@ def delete_service(service_id):
     return redirect(url_for('manage_services'))
 
 @app.route('/debug/services')
+@login_required
 def debug_services():
+        
     try:
         services = Service.query.all()
         service_data = []
@@ -222,7 +259,7 @@ def debug_services():
             service_data.append({
                 'id': service.id,
                 'name': service.name,
-                'price': service.price,
+                
                 'time_required': service.time_required,
                 'is_active': service.is_active
             })
@@ -245,8 +282,8 @@ def edit_service(service_id):
         try:
             service.name = form.name.data
             service.description = form.description.data
-            service.price = form.price.data
-            service.time_required = form.time_required.data
+            #service.price = form.price.data
+            #service.time_required = form.time_required.data
             db.session.commit()
             flash('Service updated successfully.', 'success')
             return redirect(url_for('manage_services'))
@@ -323,9 +360,12 @@ def admin_search():
     results = []
     if query:
         if search_type == 'service_request':
-            results = ServiceRequest.query.filter(
+            results = ServiceRequest.query.join(Customer).join(Service).join(SubService).filter(
                 or_(ServiceRequest.id.contains(query),
-                ServiceRequest.status.contains(query)
+                ServiceRequest.status.contains(query),
+                Customer.name.contains(query),
+                Service.name.contains(query),
+                SubService.name.contains(query)
                 )
             ).all()
         elif search_type == 'professional':
@@ -337,7 +377,9 @@ def admin_search():
         elif search_type == 'customer':
             results = Customer.query.filter(
                 or_(Customer.id.contains(query),
-                Customer.name.contains(query)
+                Customer.name.contains(query),
+                Customer.email.contains(query),
+                Customer.address.contains(query)
                 )
             ).all()
         elif search_type == 'services':
@@ -382,6 +424,43 @@ def create_service_request(service_id):
                          service=sub_service.parent_service,
                          sub_service=sub_service)
 
+@app.route('/professional/search')
+@login_required
+def professional_search():
+    if current_user.type != 'service_professional':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    query = request.args.get('q', '')
+    search_type = request.args.get('type', 'date')  # default to date search
+    
+    results = []
+    if query:
+        base_query = ServiceRequest.query.filter(
+            ServiceRequest.professional_id == current_user.id
+        )
+        
+        if search_type == 'date':
+            try:
+                search_date = datetime.strptime(query, '%Y-%m-%d').date()
+                results = base_query.filter(
+                    ServiceRequest.preferred_date == search_date
+                ).all()
+            except ValueError:
+                # If date parsing fails, try location search instead
+                results = base_query.filter(
+                    or_(
+                        ServiceRequest.address.ilike(f'%{query}%'),
+                        ServiceRequest.pincode.ilike(f'%{query}%')
+                    )
+                ).all()
+        
+    return render_template('professional/search.html', 
+                         results=results, 
+                         query=query,
+                         search_type=search_type)
+
+
 @app.route('/professional/requests')
 @login_required
 def professional_requests():
@@ -419,7 +498,47 @@ def available_requests():
     return render_template('professional/available_requests.html', 
                          available_requests=available_requests)
 
+@app.route('/professional/edit-profile', methods=['GET', 'POST'])
+@login_required
+def edit_professional_profile():
+    if current_user.type != 'service_professional':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    form = ServiceProfessionalProfileForm(obj=current_user)
+    
+    if form.validate_on_submit():
+        try:
+            current_user.name = form.name.data
+            current_user.description = form.description.data
+            current_user.experience = form.experience.data
+            # service_type is read-only as it shouldn't be changed after registration
+            
+            db.session.commit()
+            flash('Profile updated successfully!', 'success')
+            return redirect(url_for('dashboard'))
+            
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating profile: {str(e)}', 'danger')
+    
+    return render_template('professional/edit_profile.html', form=form)
 
+@app.route('/service/details/<int:request_id>')
+@login_required
+def view_service_details(request_id):
+    if current_user.type != 'service_professional':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    service = ServiceRequest.query.get_or_404(request_id)
+    
+    # Check if the professional has access to this service
+    if service.professional_id != current_user.id:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    return render_template('professional/service_details.html', service=service)
 
 @app.route('/request/<int:request_id>/<action>')
 @login_required
@@ -460,6 +579,37 @@ def customer_dashboard():
     return render_template('customer/dashboard.html',
                          active_requests=active_requests,
                          completed_requests=completed_requests)
+
+
+#customerr search functionality
+
+@app.route('/customer/search')
+@login_required
+def customer_search():
+    if current_user.type != 'customer':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    query = request.args.get('q', '')
+    results = []
+    
+    if query:
+        # Search for services and their sub-services
+        services = Service.query.filter(
+            Service.name.ilike(f'%{query}%')
+        ).all()
+        
+        # For each matching service, get its sub-services
+        for service in services:
+            sub_services = SubService.query.filter_by(parent_service_id=service.id).all()
+            results.append({
+                'service': service,
+                'sub_services': sub_services
+            })
+    
+    return render_template('customer/search.html', 
+                         query=query,
+                         results=results)
 
 
 """

@@ -1,23 +1,74 @@
-{# professional/dashboard.html #}
-
 {% extends "main.html" %}
+
+{% block title %}Professional Dashboard{% endblock %}
 <!-- Main Content -->
 {% block admin_content %}
 
 <div class="row">
     <div class="col-md-12">
+        <!-- Profile Edit Link -->
+        <div class="d-flex justify-content-end mb-3 mt-3">
+            <a href="{{ url_for('edit_professional_profile') }}" class="btn btn-primary">
+                  <i class="fas fa-user-edit"></i> View/Edit Profile
+             </a>
+        </div>  
+
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title">Available Service Requests</h5>
+            </div>
+            <div class="card-body">
+                {% if available_requests %}
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Request ID</th>
+                            <th>Customer Name</th>
+                            <th>Service</th>
+                            <th>Preferred Date</th>
+                            <th>Preferred Time</th>
+                            <th>Location</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in available_requests %}
+                        <tr>
+                            <td>{{ request.id }}</td>
+                            <td>{{ request.customer.name }}</td>
+                            <td>{{ request.service.name }}</td>
+                            <td>{{ request.preferred_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ request.preferred_time.strftime('%H:%M') }}</td>
+                            <td>{{ request.pincode }}</td>
+                            <td>
+                                <a href="{{ url_for('handle_request', request_id=request.id, action='accept') }}" 
+                                   class="btn btn-sm btn-success">Accept</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-center">No available requests for {{ current_user.service_type }} services.</p>
+                {% endif %}
+            </div>
+        </div>
+
+
         <div class="card mt-4">
             <div class="card-header">
                 <h5 class="card-title">Today's Services</h5>
             </div>
             <div class="card-body">
+                {% if today_services %}
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Service ID</th>
-                            <th>Client Name</th>
-                            <th>time</th>
-                            <th>Contact Phone Number</th>
+                            <th>Request ID</th>
+                            <th>Customer Name</th>
+                            <th>Service</th>
+                            <th>Time</th>
                             <th>Location</th>
                             <th>Status</th>
                             <th>Actions</th>
@@ -27,20 +78,32 @@
                         {% for service in today_services %}
                         <tr>
                             <td>{{ service.id }}</td>
-                            <td>{{ service.client_name }}</td>
-                            <td>{{service.time}}</td>
-                            <td>{{ service.contact_phone_number }}</td>
-                            <td>{{ service.location }}</td>
-                            <td>{{ service.status }}</td>
-                            <td>{{ service.actions }}</td>
+                            <td>{{ service.customer.name }}</td>
+                            <td>{{ service.service.name }}</td>
+                            <td>{{ service.preferred_time.strftime('%H:%M') }}</td>
+                            <td>{{ service.pincode }}</td>
                             <td>
-                                <a href="{{ url_for('view_service_details', service_id=service.id) }}" class="btn btn-sm btn-info">View</a>
-                                <a href="{{ url_for('update_service_status', service_id=service.id) }}" class="btn btn-sm btn-primary">Update</a>
+                                <span class="badge bg-{{ {
+                                    'requested': 'warning',
+                                    'accepted': 'primary',
+                                    'completed': 'success'
+                                }[service.status] }}">
+                                    {{ service.status.title() }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if service.status == 'accepted' %}
+                                <a href="{{ url_for('handle_request', request_id=service.id, action='complete') }}" 
+                                   class="btn btn-sm btn-success">Mark Complete</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                {% else %}
+                <p class="text-center">No services scheduled for today.</p>
+                {% endif %}
             </div>
         </div>
 
@@ -49,33 +112,53 @@
                 <h5 class="card-title">Closed Services</h5>
             </div>
             <div class="card-body">
+                {% if closed_services %}
                 <table class="table table-striped">
                     <thead>
                         <tr>
-                            <th>Service ID</th>
-                            <th>Client Name</th>
-                            <th>Contact Phone Number</th>
-                            <th>Location</th>
+                            <th>Request ID</th>
+                            <th>Customer Name</th>
+                            <th>Service</th>
                             <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
                             <th>Rating</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for service in closed_services %}
                         <tr>
                             <td>{{ service.id }}</td>
-                            <td>{{ service.client_name }}</td>
-                            <td>{{ service.contact_phone_number }}</td>
-                            <td>{{ service.location }}</td>
-                            <td>{{ service.date}}</td>
-                            <td>{{ service.Rating}}</td>
+                            <td>{{ service.customer.name }}</td>
+                            <td>{{ service.service.name }}</td>
+                            <td>{{ service.preferred_date.strftime('%Y-%m-%d') }}</td>
+                            <td>{{ service.pincode }}</td>
                             <td>
-                                <a href="{{ url_for('view_service_details', service_id=service.id) }}" class="btn btn-sm btn-info">View</a>
+                                <span class="badge bg-success">Completed</span>
+                            </td>
+                            <td>
+                                {% if service.rating %}
+                                    <span class="text-warning">
+                                        {% for i in range(service.rating) %}
+                                            <i class="fas fa-star"></i>
+                                        {% endfor %}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Not rated yet</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('view_service_details', request_id=service.id) }}" 
+                                   class="btn btn-sm btn-info">View Details</a>
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                {% else %}
+                <p class="text-center">No completed services yet.</p>
+                {% endif %}
             </div>
         </div>
     </div>

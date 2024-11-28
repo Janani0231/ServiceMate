@@ -11,9 +11,9 @@ class RegisterForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     name = StringField('Fullname', validators=[DataRequired(), Length(max=100)])
+    phone = StringField('Phone Number', validators=[DataRequired(), Length(min=10, max=15)]) 
     address = TextAreaField('Address', validators=[DataRequired(), Length(max=200)])
     pincode = StringField('Pin Code', validators=[DataRequired(), Length(max=10)])
-    # Make these fields optional since they're only for service professionals
     service_type = StringField('Service Type', validators=[Optional(), Length(max=100)])
     experience = IntegerField('Experience', validators=[Optional()])
     documents = FileField('Documents', validators=[Optional()])
@@ -25,6 +25,7 @@ class CustomerProfileForm(FlaskForm):
 
 class ServiceProfessionalProfileForm(FlaskForm):
     name = StringField('Name', validators=[Length(max=100)])
+    phone = StringField('Phone Number', validators=[DataRequired(), Length(min=10, max=15)])
     description = TextAreaField('Description')
     service_type = StringField('Service Type', validators=[Length(max=100)])
     experience = IntegerField('Experience')
@@ -32,8 +33,6 @@ class ServiceProfessionalProfileForm(FlaskForm):
 
 class ServiceForm(FlaskForm):
     name = StringField('Service Name', validators=[DataRequired(), Length(max=100)])
-    price = StringField('Price', validators=[DataRequired()])
-    time_required = IntegerField('Time Required (minutes)', validators=[DataRequired()])
     description = TextAreaField('Description')
     submit = SubmitField('Add Service')
 

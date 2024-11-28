@@ -53,6 +53,7 @@ class ServiceProfessional(User):
 
     id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
     name = db.Column(db.String(100), nullable=False)  # Made nullable=False
+    phone = db.Column(db.String(20)) 
     description = db.Column(db.Text)
     service_type = db.Column(db.String(100), nullable=False)  # Made nullable=False
     experience = db.Column(db.Integer, nullable=False)  # Made nullable=False
@@ -71,8 +72,8 @@ class ServiceProfessional(User):
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Float, nullable=False)
-    time_required = db.Column(db.Integer, nullable=False)  # in minutes
+    #price = db.Column(db.Float, nullable=False)
+    #time_required = db.Column(db.Integer, nullable=False)  # in minutes
     description = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     is_active = db.Column(db.Boolean, default=True)

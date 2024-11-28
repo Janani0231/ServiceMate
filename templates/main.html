@@ -58,11 +58,11 @@
             <div class="container-fluid">
                 <span class="navbar-brand">
                     {% if session.get('user_type') == 'customer' %}
-                        Welcome to Customer
+                        Welcome Customer
                     {% elif session.get('user_type') == 'service_professional' %}
-                        Welcome to Professional
+                        Welcome Professional
                     {% elif session.get('user_type') == 'admin' %}
-                        Welcome to Admin
+                        Welcome Admin
                     {% else %}
                         Welcome
                     {% endif %}
@@ -76,8 +76,7 @@
                             <a class="nav-link" href="{{ url_for('dashboard') }}">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ url_for('admin_search') }}">Search</a>
-                        </li>
+                            <a class="nav-link" href="{{ url_for('admin_search' if current_user.type == 'admin' else 'professional_search' if current_user.type == 'service_professional' else 'customer_search') }}">Search</a>                        </li>
                     </ul>
                     <ul class="navbar-nav">
                         <li class="nav-item">

@@ -8,7 +8,7 @@
         <div class="card shadow-sm">
             <div class="card-body p-4">
                 <h4 class="mb-2">Customer Signup</h4>
-                <p class="text-muted mb-4" style="font-size: 0.9rem;">Register as Professional</p> <!-- Added subtitle -->
+                <p class="text-muted mb-4" style="font-size: 0.9rem;">Register as Customer</p> <!-- Added subtitle -->
 
                 <form method="POST" action="{{ url_for('register_customer') }}">
                     {{ form.csrf_token }}
@@ -26,6 +26,11 @@
                     <div class="mb-3">
                         <label class="form-label">Fullname:</label>
                         {{ form.name(class="form-control", required=true) }}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Phone:</label>
+                        {{ form.phone(class="form-control", rows="3", required=true) }}
                     </div>
 
                     <div class="mb-3">

@@ -1,0 +1,79 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Service Request Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Request ID:</div>
+                        <div class="col-md-8">{{ service.id }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Customer Name:</div>
+                        <div class="col-md-8">{{ service.customer.name }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Service Type:</div>
+                        <div class="col-md-8">{{ service.service.name }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Date:</div>
+                        <div class="col-md-8">{{ service.preferred_date.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Time:</div>
+                        <div class="col-md-8">{{ service.preferred_time.strftime('%H:%M') }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Location:</div>
+                        <div class="col-md-8">{{ service.pincode }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            <span class="badge bg-success">Completed</span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Rating:</div>
+                        <div class="col-md-8">
+                            {% if service.rating %}
+                                <span class="text-warning">
+                                    {% for i in range(service.rating) %}
+                                        <i class="fas fa-star"></i>
+                                    {% endfor %}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">Not rated yet</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if service.customer_feedback %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Customer Feedback:</div>
+                        <div class="col-md-8">{{ service.customer_feedback }}</div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

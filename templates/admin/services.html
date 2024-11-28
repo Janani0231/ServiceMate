@@ -21,7 +21,7 @@
                             <tr>
                                 <th>ID</th>
                                 <th>Service Name</th>
-                                <th>Base Price</th>
+                                
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -30,7 +30,7 @@
                             <tr>
                                 <td>{{ service.id }}</td>
                                 <td>{{ service.name }}</td>
-                                <td>${{ service.price }}</td>
+                                
                                 <td>
                                     <a href="{{ url_for('edit_service', service_id=service.id) }}" class="btn btn-sm btn-warning">Edit</a>
                                     <form action="{{ url_for('delete_service', service_id=service.id) }}" method="POST" class="d-inline">
@@ -65,14 +65,6 @@
                     <div class="mb-3">
                         {{ form.description.label(class="form-label") }}
                         {{ form.description(class="form-control") }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.price.label(class="form-label") }}
-                        {{ form.price(class="form-control") }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form.time_required.label(class="form-label") }}
-                        {{ form.time_required(class="form-control") }}
                     </div>
                     <button type="submit" class="btn btn-primary">Add Service</button>
                 </form>

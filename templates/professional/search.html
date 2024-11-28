@@ -1,0 +1,86 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Search Service Requests</h2>
+    
+    <form class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <select name="type" class="form-select">
+                    <option value="date" {% if search_type == 'date' %}selected{% endif %}>Search by Date</option>
+                    <option value="location" {% if search_type == 'location' %}selected{% endif %}>Search by Location</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                {% if search_type == 'date' %}
+                    <input type="date" name="q" class="form-control" value="{{ query }}">
+                {% else %}
+                    <input type="text" name="q" class="form-control" 
+                           placeholder="Enter location or pincode" value="{{ query }}">
+                {% endif %}
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+            </div>
+        </div>
+    </form>
+
+    {% if results %}
+    <div class="card">
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Customer Name</th>
+                        <th>Contact</th>
+                        <th>Location</th>
+                        <th>Date</th>
+                        <th>Rating</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.id }}</td>
+                        <td>{{ result.customer.name }}</td>
+                        <td>{{ result.customer.phone }}</td>
+                        <td>{{ result.address }}<br>
+                            <small class="text-muted">PIN: {{ result.pincode }}</small>
+                        </td>
+                        <td>{{ result.preferred_date.strftime('%Y-%m-%d') }}<br>
+                            <small class="text-muted">{{ result.preferred_time.strftime('%H:%M') }}</small>
+                        </td>
+                        <td>
+                            {% if result.rating %}
+                            <span class="text-warning">
+                                {% for i in range(result.rating) %}
+                                    <i class="fas fa-star"></i>
+                                {% endfor %}
+                            </span>
+                            {% else %}
+                            <span class="text-muted">Not rated</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ {
+                                'requested': 'warning',
+                                'accepted': 'primary',
+                                'completed': 'success'
+                            }[result.status] }}">
+                                {{ result.status.title() }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% elif query %}
+    <div class="alert alert-info">No results found for your search.</div>
+    {% endif %}
+</div>
+{% endblock %}
