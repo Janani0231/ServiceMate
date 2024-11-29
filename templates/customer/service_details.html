@@ -1,0 +1,60 @@
+{% extends "main.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Service Details</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Service:</div>
+                        <div class="col-md-8">{{ service.service.name }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Professional:</div>
+                        <div class="col-md-8">{{ service.professional.name if service.professional else 'Not Assigned' }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Date:</div>
+                        <div class="col-md-8">{{ service.preferred_date.strftime('%Y-%m-%d') }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Time:</div>
+                        <div class="col-md-8">{{ service.preferred_time.strftime('%H:%M') }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">{{ service.status.title() }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Rating:</div>
+                        <div class="col-md-8">
+                            {% if service.rating %}
+                                <span class="text-warning">
+                                    {% for i in range(service.rating) %}
+                                        <i class="fas fa-star"></i>
+                                    {% endfor %}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">Not rated yet</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

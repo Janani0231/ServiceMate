@@ -170,12 +170,14 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <a href="{{ url_for('view_service_details', request_id=history.id) }}" 
-                                   class="btn btn-sm btn-info">View Details</a>
-                                {% if history.status == 'Completed' and not history.rating %}
-                                <a href="{{ url_for('rate_service', service_id=history.id) }}" 
-                                   class="btn btn-sm btn-warning">Rate Service</a>
-                                {% endif %}
+                                {% if history.status == 'Completed' %}
+                                   <a href="{{ url_for('customer_service_details', request_id=history.id) }}" 
+                                      class="btn btn-sm btn-info">View Details</a>
+                                   {% if not history.rating %}
+                                       <a href="{{ url_for('rate_service', service_id=history.id) }}" 
+                                          class="btn btn-sm btn-warning">Rate Service</a>
+                                   {% endif %}
+                               {% endif %}
                             </td>
                         </tr>
                         {% endfor %}

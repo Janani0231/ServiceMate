@@ -3,14 +3,16 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Search Services</h2>
-
+    
     <form class="mb-4">
         <div class="row">
             <div class="col-md-10">
-                <select name="service_type" class="form-control" required>
-                    <option value="" disabled selected>..</option>
+                <select name="service" class="form-select">
+                    <option value="">Select a Service...</option>
                     {% for service in services %}
-                        <option value="{{ service.name }}">{{ service.name }}</option>
+                    <option value="{{ service.id }}" {% if selected_service|string == service.id|string %}selected{% endif %}>
+                        {{ service.name }}
+                    </option>
                     {% endfor %}
                 </select>
             </div>
@@ -20,49 +22,23 @@
         </div>
     </form>
 
-    {% if results %}
+    {% if sub_services %}
     <div class="row">
-        {% for result in results %}
-        <div class="col-md-12 mb-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">{{ result.service.name }}</h5>
-                </div>
+        {% for sub_service in sub_services %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
                 <div class="card-body">
-                    <div class="accordion" id="accordion{{ result.service.id }}">
-                        {% for sub_service in result.sub_services %}
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button" 
-                                        data-bs-toggle="collapse" 
-                                        data-bs-target="#collapse{{ sub_service.id }}">
-                                    {{ sub_service.name }} - ${{ sub_service.price }}
-                                </button>
-                            </h2>
-                            <div id="collapse{{ sub_service.id }}" 
-                                 class="accordion-collapse collapse" 
-                                 data-bs-parent="#accordion{{ result.service.id }}">
-                                <div class="accordion-body">
-                                    <p>{{ sub_service.description }}</p>
-                                    <p><small>Estimated time: {{ sub_service.time_required // 60 }} hour(s)</small></p>
-                                    <a href="{{ url_for('create_service_request', service_id=sub_service.id) }}" 
-                                       class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
+                    <h5 class="card-title">{{ sub_service.name }}</h5>
+                    <p class="card-text">{{ sub_service.description }}</p>
+                    <a href="{{ url_for('create_service_request', service_id=sub_service.id) }}" 
+                       class="btn btn-primary">Book Now</a>
                 </div>
             </div>
         </div>
         {% endfor %}
     </div>
-    {% elif query %}
-    <div class="alert alert-info">No services found matching your search.</div>
-    {% else %}
-    <div class="alert alert-info">
-        Enter a service name to search for available services and their details.
-    </div>
+    {% elif selected_service %}
+    <div class="alert alert-info">No services found in this category.</div>
     {% endif %}
 </div>
 {% endblock %}

@@ -60,6 +60,7 @@ class ServiceProfessional(User):
     address = db.Column(db.String(200), nullable=False)  # Added address field
     pincode = db.Column(db.String(10), nullable=False)  # Added pincode field
     documents_path = db.Column(db.String(255))  # Added documents path
+    is_blocked = db.Column(db.Boolean, default=False)
     is_approved = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
     rating = db.Column(db.Float, default=0.0)

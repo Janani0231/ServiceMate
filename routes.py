@@ -168,51 +168,65 @@ def dashboard():
                                total_services=total_services,
                                active_professionals=active_professionals,
                                total_customers=total_customers)
+    
     elif current_user.type == 'customer':
+        # Get active requests (pending and accepted)
+        active_requests = ServiceRequest.query.filter(
+            ServiceRequest.customer_id == current_user.id,
+            ServiceRequest.status.in_(['requested', 'accepted'])
+        ).order_by(ServiceRequest.preferred_date.desc()).all()
+        
+        # Get completed requests
         completed_requests = ServiceRequest.query.filter(
             ServiceRequest.customer_id == current_user.id,
             ServiceRequest.status == 'completed'
         ).order_by(ServiceRequest.date_of_completion.desc()).all()
         
-        # Format service history with all required details
+        # Format service history
         service_history = []
-        for request in completed_requests:
-            service_history.append({
+        for request in (active_requests + completed_requests):
+            history_item = {
                 'id': request.id,
-                'service_name': request.service.name,
-                'date': request.preferred_date.strftime('%Y-%m-%d'),
-                'time': request.preferred_time.strftime('%H:%M'),
-                'price': request.sub_service.price if request.sub_service else 0,
-                'status': request.status.title(),
+                'service_name': request.service.name if request.service else 'Unknown Service',
+                'date': request.preferred_date.strftime('%Y-%m-%d') if request.preferred_date else 'N/A',
+                'time': request.preferred_time.strftime('%H:%M') if request.preferred_time else 'N/A',
                 'professional': request.professional.name if request.professional else 'Unassigned',
+                'price': request.sub_service.price if request.sub_service else request.service.base_price if request.service else 0,
+                'status': request.status.title() if request.status else 'Unknown',
                 'rating': request.rating if hasattr(request, 'rating') else None
-            })
+            }
+            service_history.append(history_item)
+        
+        # Get available services for the services section
+        available_services = Service.query.all()
         
         return render_template('customer/dashboard.html',
-                             service_history=service_history)
+                             service_history=service_history,
+                             available_services=available_services)
     elif current_user.type == 'service_professional':
-
+            if not current_user.is_approved or current_user.is_blocked:
+                flash('Your account is pending approval or has been blocked. Please contact admin.', 'warning')
         #get available requests
-        available_requests = ServiceRequest.query.filter(
-        ServiceRequest.status == 'requested',
-        ServiceRequest.professional_id == None,
-        ServiceRequest.service.has(Service.name == current_user.service_type)
+            available_requests = ServiceRequest.query.filter(
+            ServiceRequest.status == 'requested',
+            ServiceRequest.professional_id == None,
+            ServiceRequest.service.has(Service.name == current_user.service_type)
     ).all()
         # Get today's services
-        today = date.today()
-        today_services = ServiceRequest.query.filter(
-            ServiceRequest.professional_id == current_user.id,
-            ServiceRequest.status == 'accepted',
-            ServiceRequest.preferred_date == today
+            today = date.today()
+            today_services = ServiceRequest.query.filter(
+                ServiceRequest.professional_id == current_user.id,
+                ServiceRequest.status == 'accepted',
+                ServiceRequest.preferred_date == today
         ).all()
         
         # Get closed services
-        closed_services = ServiceRequest.query.filter(
-            ServiceRequest.professional_id == current_user.id,
-            ServiceRequest.status == 'completed'
-        ).all()
+            closed_services = ServiceRequest.query.filter(
+                ServiceRequest.professional_id == current_user.id,
+                ServiceRequest.status == 'completed'
+            ).all()
 
-        return render_template('professional/dashboard.html', 
+            return render_template('professional/dashboard.html', 
                                available_requests = available_requests,
                                today_services=today_services,
                                closed_services=closed_services)
@@ -334,10 +348,18 @@ def manage_professional_status(professional_id, action):
     try:
         if action == 'approve':
             professional.is_approved = True
+            professional.is_blocked = False
             flash('Professional approved successfully.', 'success')
         elif action == 'reject':
             professional.is_approved = False
             flash('Professional rejected.', 'success')
+        elif action == 'block':
+            professional.is_blocked = True
+            professional.is_approved = False
+            flash('Professional blocked successfully.', 'success')
+        elif action == 'unblock':
+            professional.is_blocked = False
+            flash('Professional unblocked successfully.', 'success')
         elif action == 'delete':
             db.session.delete(professional)
             flash('Professional deleted successfully.', 'success')
@@ -506,6 +528,10 @@ def available_requests():
         flash('Access denied.', 'danger')
         return redirect(url_for('dashboard'))
     
+    if not current_user.is_approved or current_user.is_blocked:
+        flash('Your account is pending approval or has been blocked.', 'warning')
+        return redirect(url_for('dashboard'))
+    
     # Get requests matching the professional's service type that are in 'requested' status
     available_requests = ServiceRequest.query.filter(
         ServiceRequest.status == 'requested',
@@ -597,7 +623,13 @@ def rate_service(service_id):
 @login_required
 def handle_request(request_id, action):
     if current_user.type != 'service_professional':
-        return redirect(url_for('index'))
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    if not current_user.is_approved or current_user.is_blocked:
+        flash('Your account is pending approval or has been blocked.', 'warning')
+        return redirect(url_for('dashboard'))
+        
         
     request = ServiceRequest.query.get_or_404(request_id)
     
@@ -613,7 +645,7 @@ def handle_request(request_id, action):
     db.session.commit()
     return redirect(url_for('professional_requests'))
 
-@app.route('/customer/dashboard')
+"""@app.route('/customer/dashboard')
 @login_required
 def customer_dashboard():
     if current_user.type != 'customer':
@@ -634,8 +666,24 @@ def customer_dashboard():
     return render_template('customer/dashboard.html',
                         active_requests=active_requests,
                         completed_requests=completed_requests,
-                        service_history=service_history)
+                        service_history=service_history)"""
 
+
+@app.route('/customer/service/<int:request_id>')
+@login_required
+def customer_service_details(request_id):
+    if current_user.type != 'customer':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    service = ServiceRequest.query.get_or_404(request_id)
+    
+    # Check if this service belongs to the current user
+    if service.customer_id != current_user.id:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    return render_template('customer/service_details.html', service=service)
 
 #customerr search functionality
 
@@ -646,26 +694,17 @@ def customer_search():
         flash('Access denied.', 'danger')
         return redirect(url_for('dashboard'))
     
-    query = request.args.get('q', '')
-    results = []
+    service_id = request.args.get('service', '')
+    services = Service.query.all()  # Get all services for dropdown
     
-    if query:
-        # Search for services and their sub-services
-        services = Service.query.filter(
-            Service.name.ilike(f'%{query}%')
-        ).all()
-        
-        # For each matching service, get its sub-services
-        for service in services:
-            sub_services = SubService.query.filter_by(parent_service_id=service.id).all()
-            results.append({
-                'service': service,
-                'sub_services': sub_services
-            })
+    sub_services = []
+    if service_id:
+        sub_services = SubService.query.filter_by(parent_service_id=service_id).all()
     
     return render_template('customer/search.html', 
-                         query=query,
-                         results=results)
+                         services=services,
+                         sub_services=sub_services,
+                         selected_service=service_id)
 
 
 """
@@ -799,7 +838,7 @@ def service_products(service_type):
     service = Service.query.filter_by(name=service_type.replace('_', ' ').title()).first()
     if not service:
         flash('Service not found', 'error')
-        return redirect(url_for('customer_dashboard'))
+        return redirect(url_for('dashboard'))
         
     sub_services = SubService.query.filter_by(
         parent_service_id=service.id,
