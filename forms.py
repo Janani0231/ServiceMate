@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField, SelectField, IntegerField, FileField,HiddenField, DateField, TimeField  
-from wtforms.validators import DataRequired, Email, Length, Optional
+from wtforms.validators import DataRequired, Email, Length, Optional,NumberRange
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired(), Length(min=4, max=25)])
@@ -44,3 +44,15 @@ class ServiceRequestForm(FlaskForm):
     address = TextAreaField('Service Address', validators=[DataRequired()])
     pincode = StringField('Pin Code', validators=[DataRequired(), Length(max=10)])
     submit = SubmitField('Submit Request')
+
+#class for rating_services
+
+class ServiceRatingForm(FlaskForm):
+    rating = IntegerField('Rating', validators=[
+        DataRequired(),
+        NumberRange(min=1, max=5, message="Rating must be between 1 and 5")
+    ])
+    feedback = TextAreaField('Feedback', validators=[
+        Optional(),
+        Length(max=500, message="Feedback must be less than 500 characters")
+    ])

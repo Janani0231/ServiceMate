@@ -3,13 +3,16 @@
 {% block content %}
 <div class="container mt-5">
     <h2>Search Services</h2>
-    
+
     <form class="mb-4">
         <div class="row">
             <div class="col-md-10">
-                <input type="text" name="q" class="form-control" 
-                       placeholder="Search for services (e.g., plumbing, cleaning)" 
-                       value="{{ query }}">
+                <select name="service_type" class="form-control" required>
+                    <option value="" disabled selected>..</option>
+                    {% for service in services %}
+                        <option value="{{ service.name }}">{{ service.name }}</option>
+                    {% endfor %}
+                </select>
             </div>
             <div class="col-md-2">
                 <button type="submit" class="btn btn-primary w-100">Search</button>

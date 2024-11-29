@@ -1,0 +1,52 @@
+{% extends "main.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/rating.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Rate Service</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Service Details:</h6>
+                        <p><strong>Service:</strong> {{ service.service.name }}</p>
+                        <p><strong>Professional:</strong> {{ service.professional.name }}</p>
+                        <p><strong>Date:</strong> {{ service.preferred_date.strftime('%Y-%m-%d') }}</p>
+                    </div>
+
+                    <form method="POST">
+                        {{ form.csrf_token }}
+                        
+                        <div class="rating-container">
+                            <div class="rating-title">How would you rate this service?</div>
+                            <div class="rating">
+                                {% for i in range(5, 0, -1) %}
+                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}">
+                                <label for="star{{ i }}">☆</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="feedback-container">
+                            <label class="form-label">Share your experience (optional):</label>
+                            {{ form.feedback(class="form-control", rows="3", 
+                               placeholder="Tell us about your experience with the service...") }}
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Submit Rating</button>
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

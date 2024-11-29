@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from model import User, Customer, ServiceProfessional, Service,SubService, ServiceRequest
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from forms import LoginForm, RegisterForm, ServiceForm,ServiceRequestForm, ServiceProfessionalProfileForm
+from forms import LoginForm, RegisterForm, ServiceForm,ServiceRequestForm, ServiceProfessionalProfileForm,ServiceRatingForm
 from app import app
 from extensions import db
 from sqlalchemy import or_
@@ -19,8 +19,6 @@ def index():
         return redirect(url_for('login'))
     # User is authenticated, redirect to appropriate dashboard)
     return redirect(url_for('dashboard'))
-
-    return render_template('main.html')
 
 
 @app.route('/test_db')
@@ -171,7 +169,27 @@ def dashboard():
                                active_professionals=active_professionals,
                                total_customers=total_customers)
     elif current_user.type == 'customer':
-        return render_template('customer/dashboard.html')
+        completed_requests = ServiceRequest.query.filter(
+            ServiceRequest.customer_id == current_user.id,
+            ServiceRequest.status == 'completed'
+        ).order_by(ServiceRequest.date_of_completion.desc()).all()
+        
+        # Format service history with all required details
+        service_history = []
+        for request in completed_requests:
+            service_history.append({
+                'id': request.id,
+                'service_name': request.service.name,
+                'date': request.preferred_date.strftime('%Y-%m-%d'),
+                'time': request.preferred_time.strftime('%H:%M'),
+                'price': request.sub_service.price if request.sub_service else 0,
+                'status': request.status.title(),
+                'professional': request.professional.name if request.professional else 'Unassigned',
+                'rating': request.rating if hasattr(request, 'rating') else None
+            })
+        
+        return render_template('customer/dashboard.html',
+                             service_history=service_history)
     elif current_user.type == 'service_professional':
 
         #get available requests
@@ -520,8 +538,7 @@ def edit_professional_profile():
             
         except Exception as e:
             db.session.rollback()
-            flash(f'Error updating profile: {str(e)}', 'danger')
-    
+            flash(f'Error updating profile: {str(e)}', 'danger')  
     return render_template('professional/edit_profile.html', form=form)
 
 @app.route('/service/details/<int:request_id>')
@@ -539,6 +556,42 @@ def view_service_details(request_id):
         return redirect(url_for('dashboard'))
         
     return render_template('professional/service_details.html', service=service)
+
+
+#below is the route for rating_service
+
+@app.route('/service/<int:service_id>/rate', methods=['GET', 'POST'])
+@login_required
+def rate_service(service_id):
+    if current_user.type != 'customer':
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    service = ServiceRequest.query.get_or_404(service_id)
+    
+    # Check if this service belongs to the current user
+    if service.customer_id != current_user.id:
+        flash('Access denied.', 'danger')
+        return redirect(url_for('dashboard'))
+        
+    # Check if service is completed
+    if service.status != 'completed':
+        flash('You can only rate completed services.', 'warning')
+        return redirect(url_for('dashboard'))
+        
+    form = ServiceRatingForm()
+    
+    if form.validate_on_submit():
+        service.rating = form.rating.data
+        service.customer_feedback = form.feedback.data
+        db.session.commit()
+        flash('Thank you for your rating!', 'success')
+        return redirect(url_for('dashboard'))
+        
+    return render_template('customer/rating_service.html', 
+                         service=service, 
+                         form=form)
+
 
 @app.route('/request/<int:request_id>/<action>')
 @login_required
@@ -575,10 +628,13 @@ def customer_dashboard():
         ServiceRequest.customer_id == current_user.id,
         ServiceRequest.status == 'completed'
     ).all()
+
+    service_history = active_requests + completed_requests
     
     return render_template('customer/dashboard.html',
-                         active_requests=active_requests,
-                         completed_requests=completed_requests)
+                        active_requests=active_requests,
+                        completed_requests=completed_requests,
+                        service_history=service_history)
 
 
 #customerr search functionality

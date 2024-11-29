@@ -125,20 +125,21 @@
                 </div>
             </div>
         </div>
-        <div class="mt-4">
-        Service History Section 
-        <div class="card mt-4 mb-4">
+        <div class="card mt-4">
             <div class="card-header">
                 <h5 class="card-title">Your Service History</h5>
             </div>
             <div class="card-body">
+                {% if service_history %}
                 <table class="table table-striped">
                     <thead>
                         <tr>
                             <th>Service</th>
                             <th>Date</th>
+                            <th>Professional</th>
                             <th>Price</th>
                             <th>Status</th>
+                            <th>Rating</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -147,6 +148,7 @@
                         <tr>
                             <td>{{ history.service_name }}</td>
                             <td>{{ history.date }}</td>
+                            <td>{{ history.professional }}</td>
                             <td>${{ history.price }}</td>
                             <td>
                                 <span class="badge {% if history.status == 'Completed' %}bg-success
@@ -157,23 +159,55 @@
                                 </span>
                             </td>
                             <td>
-                                <a href="{{ url_for('view_service_details', service_id=history.id) }}" 
+                                {% if history.rating %}
+                                    <span class="text-warning">
+                                        {% for i in range(history.rating) %}
+                                            <i class="fas fa-star"></i>
+                                        {% endfor %}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted">Not rated</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('view_service_details', request_id=history.id) }}" 
                                    class="btn btn-sm btn-info">View Details</a>
-                                {% if history.status == 'Pending' %}
-                                <a href="{{ url_for('cancel_service', service_id=history.id) }}" 
-                                   class="btn btn-sm btn-danger">Cancel</a>
+                                {% if history.status == 'Completed' and not history.rating %}
+                                <a href="{{ url_for('rate_service', service_id=history.id) }}" 
+                                   class="btn btn-sm btn-warning">Rate Service</a>
                                 {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                {% if not service_history %}
-                <div class="text-center p-3">
-                    <p>No service history available.</p>
-                </div>
+                {% else %}
+                <p class="text-center">No service history available.</p>
                 {% endif %}
             </div>
+        </div>
+
+        <!-- Available Services Section -->
+        <div class="card mt-4">
+            <!-- <div class="card-header">
+                <h5 class="card-title">Available Services</h5>
+            </div> -->
+            <!-- <div class="card-body">
+                <div class="row">
+                    {% for service in services %}
+                    <div class="col-md-4 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ service.name }}</h5>
+                                <p class="card-text">{{ service.description }}</p>
+                                <a href="{{ url_for('service_products', service_type=service.type) }}" 
+                                   class="btn btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div> -->
         </div>
     </div>
 </div>
