@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, login_required, current_user
 from model import User, Customer, ServiceProfessional, Service,SubService, ServiceRequest
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from forms import LoginForm, RegisterForm, ServiceForm,ServiceRequestForm, ServiceProfessionalProfileForm,ServiceRatingForm
+from forms import LoginForm, RegisterForm, ServiceForm,ServiceRequestForm, ServiceProfessionalProfileForm,ServiceRatingForm,SubServiceForm
 from app import app
 from extensions import db
 from sqlalchemy import or_
@@ -191,14 +191,13 @@ def dashboard():
                 'date': request.preferred_date.strftime('%Y-%m-%d') if request.preferred_date else 'N/A',
                 'time': request.preferred_time.strftime('%H:%M') if request.preferred_time else 'N/A',
                 'professional': request.professional.name if request.professional else 'Unassigned',
-                'price': request.sub_service.price if request.sub_service else request.service.base_price if request.service else 0,
+                'price': request.sub_service.price if request.sub_service else 0,
                 'status': request.status.title() if request.status else 'Unknown',
                 'rating': request.rating if hasattr(request, 'rating') else None
             }
             service_history.append(history_item)
-        
         # Get available services for the services section
-        available_services = Service.query.all()
+        available_services = Service.query.filter_by(is_active=True).all()        
         
         return render_template('customer/dashboard.html',
                              service_history=service_history,
@@ -237,18 +236,18 @@ def dashboard():
 @app.route('/admin/services', methods=['GET', 'POST'])
 @login_required
 def manage_services():
-    # Check if user is admin
     if current_user.type != 'admin':
         flash('Access denied. Admin privileges required.', 'danger')
         return redirect(url_for('dashboard'))
     
     form = ServiceForm()
+    sub_service_form = SubServiceForm()
+    
     if form.validate_on_submit():
         try:
             service = Service(
                 name=form.name.data,
-                description=form.description.data,
-                #time_required=form.time_required.data
+                description=form.description.data
             )
             db.session.add(service)
             db.session.commit()
@@ -258,9 +257,11 @@ def manage_services():
             db.session.rollback()
             flash(f'Error adding service: {str(e)}', 'danger')
     
-    # Get all services for display
-    services = Service.query.all()
-    return render_template('admin/services.html', services=services, form=form)
+    services = Service.query.filter_by(is_active=True).all()
+    return render_template('admin/services.html', 
+                         services=services, 
+                         form=form, 
+                         sub_service_form=sub_service_form)
 
 @app.route('/admin/services/delete/<int:service_id>', methods=['POST'])
 @login_required
@@ -271,12 +272,13 @@ def delete_service(service_id):
     
     service = Service.query.get_or_404(service_id)
     try:
-        db.session.delete(service)
+        # Instead of deleting, set the service to inactive
+        service.is_active = False
         db.session.commit()
-        flash('Service deleted successfully.', 'success')
+        flash('Service has been deactivated successfully.', 'success')
     except Exception as e:
         db.session.rollback()
-        flash(f'Error deleting service: {str(e)}', 'danger')
+        flash(f'Error deactivating service: {str(e)}', 'danger')
     
     return redirect(url_for('manage_services'))
 
@@ -457,7 +459,7 @@ def create_service_request(service_id):
         db.session.commit()
         
         flash('Service request submitted successfully!', 'success')
-        return redirect(url_for('customer_dashboard'))
+        return redirect(url_for('dashboard'))
         
     return render_template('customer/create_request.html', 
                          form=form, 
@@ -570,30 +572,28 @@ def edit_professional_profile():
 @app.route('/service/details/<int:request_id>')
 @login_required
 def view_service_details(request_id):
-    if current_user.type != 'service_professional':
-        flash('Access denied.', 'danger')
-        return redirect(url_for('dashboard'))
-        
     service = ServiceRequest.query.get_or_404(request_id)
     
-    # Check if the professional has access to this service
-    if service.professional_id != current_user.id:
-        flash('Access denied.', 'danger')
-        return redirect(url_for('dashboard'))
-        
-    return render_template('professional/service_details.html', service=service)
+    # Allow both customers and professionals to view their own service details
+    if (current_user.type == 'customer' and service.customer_id == current_user.id) or \
+       (current_user.type == 'service_professional' and service.professional_id == current_user.id):
+        return render_template('customer/service_details.html' if current_user.type == 'customer' 
+                             else 'professional/service_details.html', service=service)
+    
+    flash('Access denied.', 'danger')
+    return redirect(url_for('dashboard'))
 
 
 #below is the route for rating_service
 
-@app.route('/service/<int:service_id>/rate', methods=['GET', 'POST'])
+@app.route('/service/<int:request_id>/rate', methods=['GET', 'POST'])
 @login_required
-def rate_service(service_id):
+def rate_service(request_id):
     if current_user.type != 'customer':
         flash('Access denied.', 'danger')
         return redirect(url_for('dashboard'))
         
-    service = ServiceRequest.query.get_or_404(service_id)
+    service = ServiceRequest.query.get_or_404(request_id)
     
     # Check if this service belongs to the current user
     if service.customer_id != current_user.id:
@@ -645,29 +645,6 @@ def handle_request(request_id, action):
     db.session.commit()
     return redirect(url_for('professional_requests'))
 
-"""@app.route('/customer/dashboard')
-@login_required
-def customer_dashboard():
-    if current_user.type != 'customer':
-        return redirect(url_for('index'))
-        
-    active_requests = ServiceRequest.query.filter(
-        ServiceRequest.customer_id == current_user.id,
-        ServiceRequest.status.in_(['requested', 'accepted'])
-    ).all()
-    
-    completed_requests = ServiceRequest.query.filter(
-        ServiceRequest.customer_id == current_user.id,
-        ServiceRequest.status == 'completed'
-    ).all()
-
-    service_history = active_requests + completed_requests
-    
-    return render_template('customer/dashboard.html',
-                        active_requests=active_requests,
-                        completed_requests=completed_requests,
-                        service_history=service_history)"""
-
 
 @app.route('/customer/service/<int:request_id>')
 @login_required
@@ -706,144 +683,86 @@ def customer_search():
                          sub_services=sub_services,
                          selected_service=service_id)
 
-
-"""
-@app.route('/book_service/<service_id>', methods=['GET', 'POST'])
-@login_required
-def book_service(service_id):
-    # Fetch the service details using the service_id
-    service = Service.query.filter_by(id=service_id).first_or_404()
-    
-    # Logic for booking the service
-    if request.method == 'POST':
-        # Handle the booking logic here
-        # For example, create a new ServiceRequest
-        service_request = ServiceRequest(
-            service_id=service.id,
-            customer_id=current_user.id,
-            status='requested'
-        )
-        db.session.add(service_request)
-        db.session.commit()
-        flash('Service booked successfully!', 'success')
-        return redirect(url_for('dashboard'))
-    
-    return render_template('book_service.html', service=service)"""
-
-    
-"""@app.route('/products')
-@login_required
-def products():
-    return render_template('customer/products.html')
-
-from flask import render_template
-from flask_login import login_required
-
-@app.route('/products')
-@login_required
-def products():
-    return render_template('customer/products.html')"""
-
-
-#second comment
-
-"""@app.route('/customer/products/plumbing')
-@login_required
-def plumbing_products():
-    plumbing_service = Service.query.filter_by(name='Plumbing').first()
-    if not plumbing_service:
-        flash('Service not found', 'error')
-        return redirect(url_for('customer_dashboard'))
-        
-    sub_services = SubService.query.filter_by(
-        parent_service_id=plumbing_service.id,
-        is_active=True
-    ).all()
-    
-    return render_template('customer/products/plumbing.html', sub_services=sub_services)
-
-@app.route('/customer/products/cleaning')
-@login_required
-def cleaning_products():
-    cleaning_service = Service.query.filter_by(name='Cleaning').first()
-    if not cleaning_service:
-        flash('Service not found', 'error')
-        return redirect(url_for('customer_dashboard'))
-        
-    sub_services = SubService.query.filter_by(
-        parent_service_id=cleaning_service.id,
-        is_active=True
-    ).all()
-    
-    return render_template('customer/products/cleaning.html', sub_services=sub_services)
-
-@app.route('/customer/products/haircut')
-@login_required
-def haircut_products():
-    return render_template('customer/products/haircut.html')
-
-@app.route('/customer/products/pest_control')
-@login_required
-def pest_control_products():
-    pest_control_service = Service.query.filter_by(name='Pest Control').first()
-    if not pest_control_service:
-        flash('Service not found', 'error')
-        return redirect(url_for('customer_dashboard'))
-        
-    sub_services = SubService.query.filter_by(
-        parent_service_id=pest_control_service.id,
-        is_active=True
-    ).all()
-    
-    return render_template('customer/products/pest_control.html', sub_services=sub_services)
-
-@app.route('/customer/products/painting')
-@login_required
-def painting_products():
-    return render_template('customer/products/painting.html')
-
-@app.route('/customer/products/carpentry')
-@login_required
-def carpentry_products():
-    return render_template('customer/products/carpentry.html')
-
-@app.route('/customer/products/gardening')
-@login_required
-def gardening_products():
-    return render_template('customer/products/gardening.html')
-
-@app.route('/customer/products/home_renovation')
-@login_required
-def home_renovation_products():
-    return render_template('customer/products/home_renovation.html')
-
-@app.route('/customer/products/electricals')
-@login_required
-def electrical_products():
-    electrical_service = Service.query.filter_by(name='Electrical Work').first()
-    if not electrical_service:
-        flash('Service not found', 'error')
-        return redirect(url_for('customer_dashboard'))
-        
-    sub_services = SubService.query.filter_by(
-        parent_service_id=electrical_service.id,
-        is_active=True
-    ).all()
-    
-    return render_template('customer/products/electricals.html', sub_services=sub_services)"""
-
 @app.route('/customer/products/<service_type>')
 @login_required
 def service_products(service_type):
-    service = Service.query.filter_by(name=service_type.replace('_', ' ').title()).first()
-    if not service:
-        flash('Service not found', 'error')
-        return redirect(url_for('dashboard'))
-        
+    # Convert service_type from URL format (e.g., 'home_renovation') to title case ('Home Renovation')
+    service_name = service_type.replace('_', ' ').title()
+    service = Service.query.filter_by(name=service_name).first_or_404()
+    
     sub_services = SubService.query.filter_by(
         parent_service_id=service.id,
         is_active=True
     ).all()
     
-    template_name = f'customer/products/{service_type}.html'
-    return render_template(template_name, sub_services=sub_services, service=service)
+    return render_template('customer/service_products.html', 
+                         service=service,
+                         sub_services=sub_services)
+@app.route('/admin/services/<int:service_id>/sub-services/add', methods=['POST'])
+@login_required
+def add_sub_service(service_id):
+    if current_user.type != 'admin':
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    form = SubServiceForm()
+    if form.validate_on_submit():
+        try:
+            sub_service = SubService(
+                parent_service_id=service_id,
+                name=form.name.data,
+                description=form.description.data,
+                price=form.price.data,
+                time_required=form.time_required.data
+            )
+            db.session.add(sub_service)
+            db.session.commit()
+            flash('Sub-service added successfully.', 'success')
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error adding sub-service: {str(e)}', 'danger')
+    
+    return redirect(url_for('manage_services'))
+
+@app.route('/admin/sub-services/<int:sub_service_id>/delete', methods=['POST'])
+@login_required
+def delete_sub_service(sub_service_id):
+    if current_user.type != 'admin':
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    sub_service = SubService.query.get_or_404(sub_service_id)
+    try:
+        db.session.delete(sub_service)
+        db.session.commit()
+        flash('Sub-service deleted successfully.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error deleting sub-service: {str(e)}', 'danger')
+    
+    return redirect(url_for('manage_services'))
+
+@app.route('/admin/sub-services/edit/<int:sub_service_id>', methods=['GET', 'POST'])
+@login_required
+def edit_sub_service(sub_service_id):
+    if current_user.type != 'admin':
+        flash('Access denied. Admin privileges required.', 'danger')
+        return redirect(url_for('dashboard'))
+    
+    sub_service = SubService.query.get_or_404(sub_service_id)
+    form = SubServiceForm(obj=sub_service)
+    
+    if form.validate_on_submit():
+        try:
+            sub_service.name = form.name.data
+            sub_service.description = form.description.data
+            sub_service.price = form.price.data
+            sub_service.time_required = form.time_required.data
+            db.session.commit()
+            flash('Sub-service updated successfully.', 'success')
+            return redirect(url_for('manage_services'))
+        except Exception as e:
+            db.session.rollback()
+            flash(f'Error updating sub-service: {str(e)}', 'danger')
+    
+    return render_template('admin/edit_sub_service.html', form=form, sub_service=sub_service)
