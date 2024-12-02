@@ -686,9 +686,13 @@ def customer_search():
 @app.route('/customer/products/<service_type>')
 @login_required
 def service_products(service_type):
-    # Convert service_type from URL format (e.g., 'home_renovation') to title case ('Home Renovation')
+    # Convert URL format to possible service name variations
     service_name = service_type.replace('_', ' ').title()
-    service = Service.query.filter_by(name=service_name).first_or_404()
+    
+    # Try to find the service using case-insensitive comparison
+    service = Service.query.filter(
+        db.func.lower(Service.name) == db.func.lower(service_name)
+    ).first_or_404()
     
     sub_services = SubService.query.filter_by(
         parent_service_id=service.id,
@@ -698,6 +702,7 @@ def service_products(service_type):
     return render_template('customer/service_products.html', 
                          service=service,
                          sub_services=sub_services)
+
 @app.route('/admin/services/<int:service_id>/sub-services/add', methods=['POST'])
 @login_required
 def add_sub_service(service_id):

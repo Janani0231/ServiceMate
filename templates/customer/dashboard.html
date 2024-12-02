@@ -1,164 +1,77 @@
-{# services/dashboard.html #}
-
 {% extends "main.html" %}
-<!-- Main Content -->
-{% block admin_content %}
 
-<div class="row">
-    <div class="col-md-12">
-        <!-- Available Services Section -->
-        <div class="card mt-4 mb-4" style="margin-bottom: 30rem;"> <!-- Adjust value as needed -->
-            <div class="card-header">
-                <h5 class="card-title">Services categories</h5>
-            </div>
-            <div class="card-body pb-5">
-                <div class="service-cards-container" id="service-cards-section">
-                    <div class="row">
-                        <!-- Electrical Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/electrical.jpg" class="card-img-top" alt="Electrical Services">
-                                <div class="card-body">
-                                    <p class="card-text">Power up your home</p>
-                                    <h5 class="card-title">Electrical Services</h5>        
-                                    <a href="{{ url_for('service_products', service_type='electrical_work') }}" class="btn btn-primary">Book Now</a>
+{% block admin_content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Available Services</h5>
+                </div>
+                <div class="card-body">
+                    <div class="service-cards-container" id="service-cards-section">
+                        <div class="row">
+                            {% for service in available_services %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    <img src="{{ url_for('static', filename='images/' + service.name.lower().replace(' ', '_') + '.svg') }}"
+                                    onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/default.svg') }}'" 
+                                    class="card-img-top" 
+                                    alt="{{ service.name }}"
+                                    style="padding: 20px; height: 200px; object-fit: contain;">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{ service.name }}</h5>
+                                        <p class="card-text">{{ service.description }}</p>
+                                        <a href="{{ url_for('service_products', service_type=service.name.lower().replace(' ', '_')) }}" 
+                                           class="btn btn-primary">Book Now</a>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                
-                        <!-- Massage Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Plumbing.jpg" class="card-img-top" alt="Plumbing">
-                                <div class="card-body">
-                                    <p class="card-text">Fixing leaks, fast and right.</p>
-                                    <h5 class="card-title">Plumbing Services</h5>                                
-                                    <a href="{{ url_for('service_products', service_type='plumbing') }}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-                
-                        <!-- Cleaning Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Cleaning.jpg" class="card-img-top" alt="Facial">
-                                <div class="card-body">
-                                    <p class="card-text">Spotless spaces, hassle-free.</p>
-                                    <h5 class="card-title">Cleaning Services</h5>                                
-                                    <a href="{{url_for('service_products', service_type='cleaning') }}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-                
-                        <!-- Haircut and Spa Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Haircut.jpg" class="card-img-top" alt="Haircut and Spa">
-                                <div class="card-body">
-                                    <p class="card-text">Style and relaxation delivered</p>
-                                    <h5 class="card-title">Haircut and Spa</h5>                                
-                                    <a href="{{ url_for('service_products', service_type='haircut') }}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-                
-                        <!-- Pest Control Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Pest_Control.jpg" class="card-img-top" alt="Pest Control">
-                                <div class="card-body">
-                                    <p class="card-text">Say goodbye to pests!</p>
-                                    <h5 class="card-title">Pest Control</h5>
-                                    <a href="{{ url_for('service_products', service_type='pest_control') }}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-                
-                        <!-- Painting Services  -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Painting.jpg" class="card-img-top" alt="Painting">
-                                <div class="card-body">
-                                    <p class="card-text">Color your world beautifully.</p>   
-                                    <h5 class="card-title">Painting Services</h5>                                             
-                                    <a href="{{ url_for('service_products', service_type='painting') }}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-    
-                        <!-- Carpentry Services Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Carpentry Services.jpg" class="card-img-top" alt="Carpentry Services">
-                                <div class="card-body">
-                                    <p class="card-text">Crafting furniture with care</p>
-                                    <h5 class="card-title">Carpentry Services</h5>
-                                    <a href="{{ url_for('service_products', service_type='carpentry') }}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-    
-                        <!-- Gardening Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Gardening.jpg" class="card-img-top" alt="Gardening">
-                                <div class="card-body">
-                                    <p class="card-text">Green thumbs, greener spaces.</p>   
-                                    <h5 class="card-title">Gardening Services</h5>                                             
-                                    <a href="{{url_for('service_products', service_type='gardening') }}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
-                        </div>
-    
-                        <!-- Home Renovation Services -->
-                        <div class="col-md-4 mb-4">
-                            <div class="card h-100">
-                                <img src="https://example.com/Gardening.jpg" class="card-img-top" alt="Home Renovation">
-                                <div class="card-body">
-                                    <p class="card-text">Reimagine your living space.</p>   
-                                    <h5 class="card-title">Home Renovation Services</h5>                                             
-                                    <a href="{{ url_for('service_products', service_type='home_renovation')}}" class="btn btn-primary">Book Now</a>
-                                </div>
-                            </div>
+                            {% endfor %}
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="card mt-4">
-            <div class="card-header">
-                <h5 class="card-title">Your Service History</h5>
-            </div>
-            <div class="card-body">
-                {% if service_history %}
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Service</th>
-                            <th>Date</th>
-                            <th>Professional</th>
-                            <th>Price</th>
-                            <th>Status</th>
-                            <th>Rating</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for history in service_history %}
-                        <tr>
-                            <td>{{ history.service_name }}</td>
-                            <td>{{ history.date }}</td>
-                            <td>{{ history.professional }}</td>
-                            <td>${{ history.price }}</td>
-                            <td>
-                                <span class="badge {% if history.status == 'Completed' %}bg-success
-                                                  {% elif history.status == 'Pending' %}bg-warning
-                                                  {% elif history.status == 'Cancelled' %}bg-danger
-                                                  {% endif %}">
-                                    {{ history.status }}
-                                </span>
-                            </td>
-                            <td>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header">
+            <h5 class="card-title">Your Service History</h5>
+        </div>
+        <div class="card-body">
+            {% if service_history %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Date</th>
+                        <th>Professional</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Rating</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for history in service_history %}
+                    <tr>
+                        <td>{{ history.service_name }}</td>
+                        <td>{{ history.date }} {{ history.time }}</td>
+                        <td>{{ history.professional }}</td>
+                        <td>${{ "%.2f"|format(history.price) }}</td>
+                        <td>
+                            <span class="badge bg-{{ {
+                                'Requested': 'warning',
+                                'Accepted': 'primary',
+                                'Completed': 'success',
+                                'Cancelled': 'danger'
+                            }[history.status] }}">
+                                {{ history.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if history.status == 'Completed' %}
                                 {% if history.rating %}
                                     <span class="text-warning">
                                         {% for i in range(history.rating) %}
@@ -166,52 +79,27 @@
                                         {% endfor %}
                                     </span>
                                 {% else %}
-                                    <span class="text-muted">Not rated</span>
+                                    <a href="{{ url_for('rate_service', request_id=history.id) }}" 
+                                       class="btn btn-sm btn-outline-primary">Rate Service</a>
                                 {% endif %}
-                            </td>
-                            <td>
-                                {% if history.status == 'Completed' %}
-                                   <a href="{{ url_for('customer_service_details', request_id=history.id) }}" 
-                                      class="btn btn-sm btn-info">View Details</a>
-                                   {% if not history.rating %}
-                                       <a href="{{ url_for('rate_service', service_id=history.id) }}" 
-                                          class="btn btn-sm btn-warning">Rate Service</a>
-                                   {% endif %}
-                               {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-center">No service history available.</p>
-                {% endif %}
-            </div>
-        </div>
-
-        <!-- Available Services Section -->
-        <div class="card mt-4">
-            <!-- <div class="card-header">
-                <h5 class="card-title">Available Services</h5>
-            </div> -->
-            <!-- <div class="card-body">
-                <div class="row">
-                    {% for service in services %}
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body">
-                                <h5 class="card-title">{{ service.name }}</h5>
-                                <p class="card-text">{{ service.description }}</p>
-                                <a href="{{ url_for('service_products', service_type=service.type) }}" 
-                                   class="btn btn-primary">View Details</a>
-                            </div>
-                        </div>
-                    </div>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{{ url_for('view_service_details', request_id=history.id) }}" 
+                               class="btn btn-sm btn-info">View Details</a>
+                            {% if history.status == 'Requested' %}
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% endfor %}
-                </div>
-            </div> -->
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-center text-muted">No service history found.</p>
+            {% endif %}
         </div>
     </div>
 </div>
-
-{% endblock %} 
+{% endblock %}

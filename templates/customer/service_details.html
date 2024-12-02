@@ -6,7 +6,7 @@
         <div class="col-md-8 mx-auto">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Service Details</h5>
+                    <h5 class="card-title">Service Request Details #{{ service.id }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="row mb-3">
@@ -15,39 +15,55 @@
                     </div>
                     
                     <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Sub-Service:</div>
+                        <div class="col-md-8">{{ service.sub_service.name if service.sub_service else 'N/A' }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Professional:</div>
-                        <div class="col-md-8">{{ service.professional.name if service.professional else 'Not Assigned' }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Date:</div>
-                        <div class="col-md-8">{{ service.preferred_date.strftime('%Y-%m-%d') }}</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Time:</div>
-                        <div class="col-md-8">{{ service.preferred_time.strftime('%H:%M') }}</div>
+                        <div class="col-md-8">{{ service.professional.name if service.professional else 'Unassigned' }}</div>
                     </div>
                     
                     <div class="row mb-3">
                         <div class="col-md-4 fw-bold">Status:</div>
-                        <div class="col-md-8">{{ service.status.title() }}</div>
+                        <div class="col-md-8">
+                            <span class="badge bg-{{ {
+                                'requested': 'warning',
+                                'accepted': 'primary',
+                                'completed': 'success',
+                                'cancelled': 'danger'
+                            }[service.status] }}">
+                                {{ service.status.title() }}
+                            </span>
+                        </div>
                     </div>
                     
                     <div class="row mb-3">
-                        <div class="col-md-4 fw-bold">Rating:</div>
-                        <div class="col-md-8">
-                            {% if service.rating %}
-                                <span class="text-warning">
-                                    {% for i in range(service.rating) %}
-                                        <i class="fas fa-star"></i>
-                                    {% endfor %}
-                                </span>
-                            {% else %}
-                                <span class="text-muted">Not rated yet</span>
-                            {% endif %}
-                        </div>
+                        <div class="col-md-4 fw-bold">Preferred Date:</div>
+                        <div class="col-md-8">{{ service.preferred_date.strftime('%Y-%m-%d') }}</div>
                     </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Preferred Time:</div>
+                        <div class="col-md-8">{{ service.preferred_time.strftime('%H:%M') }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Service Address:</div>
+                        <div class="col-md-8">{{ service.address }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Pin Code:</div>
+                        <div class="col-md-8">{{ service.pincode }}</div>
+                    </div>
+                    
+                    {% if service.description %}
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Special Instructions:</div>
+                        <div class="col-md-8">{{ service.description }}</div>
+                    </div>
+                    {% endif %}
                     
                     <div class="d-grid gap-2">
                         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>

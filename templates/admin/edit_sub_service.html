@@ -1,0 +1,42 @@
+{% extends "main.html" %}
+
+{% block title %}Edit Sub-Service - Admin Dashboard{% endblock %}
+
+{% block content %}
+{% block admin_content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Edit Sub-Service</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        <div class="mb-3">
+                            {{ form.name.label(class="form-label") }}
+                            {{ form.name(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.price.label(class="form-label") }}
+                            {{ form.price(class="form-control") }}
+                        </div>
+                        <div class="mb-3">
+                            {{ form.time_required.label(class="form-label") }}
+                            {{ form.time_required(class="form-control") }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Sub-Service</button>
+                        <a href="{{ url_for('manage_services') }}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% endblock %}
