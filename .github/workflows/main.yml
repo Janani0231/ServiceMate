@@ -1,5 +1,13 @@
+name: Email Verification Workflow
+
+on:
+  push:
+    branches:
+      - main  # or your default branch
+
 jobs:
   test:
+    runs-on: ubuntu-latest
     steps:
       - name: 22f3000898@ds.study.iitm.ac.in
         run: echo "Hello, world!"
